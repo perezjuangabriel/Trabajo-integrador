@@ -58,4 +58,4 @@ npm run typecheck && npm test
 OAuth con Google/GitHub/Discord requiere un build propio (esquema `spotcheck://`), no Expo Go.
 
 ## Documentación
-`docs/API.md` · `DATABASE.md` · `FEATURED_ALGORITHM.md` · `OAUTH.md` · `USER_MANUAL.md` (3 roles) · `EAS_APK.md` · `DEPLOY_RAILWAY.md` · `PROGRESS.md`
+`docs/GUIA_INSTALACION.md` (entorno, variables, APK) · `docs/MANUAL_DE_USUARIO.md` (3 roles) · `docs/API.md` (endpoints) · `DATABASE.md` · `FEATURED_ALGORITHM.md` · `OAUTH.md` · `EAS_APK.md` · `DEPLOY_RAILWAY.md` · `PROGRESS.md`

@@ -1,7 +1,47 @@
 # API REST SPOTCHECK — v1
 
-Base: `{PUBLIC_BASE_URL}/api/v1` · JSON · fechas ISO-8601 en UTC.
-> Documentado hasta la **Etapa 5** (autenticación, catálogo, reseñas, favoritos, reportes, destacados y administración).
+Referencia técnica del backend. Base: `{PUBLIC_BASE_URL}/api/v1` (local: `http://localhost:3000/api/v1`) · JSON UTF‑8 · fechas ISO‑8601 en UTC · IDs numéricos.
+
+**Índice:** [Guía rápida](#guía-rápida) · [Convenciones](#convenciones) · [Autenticación](#autenticación-auth) · [OAuth](#oauth-authoauth--ver-docsoauthmd) · [Perfil](#perfil-users) · [Administración](#administración-admin-solo-admin) · [Catálogo](#catálogo-etapa-3) · [Reseñas, favoritos y reportes](#reseñas-favoritos-reportes-y-actividad-etapa-4) · [Home y destacados](#destacados-home-y-administración-etapa-5)
+
+## Guía rápida
+```bash
+B=http://localhost:3000/api/v1
+curl $B/health                                   # {"data":{"status":"ok"}}
+
+# 1) Iniciar sesión
+curl -X POST $B/auth/login -H 'Content-Type: application/json' \
+  -d '{"email":"lucia@spotcheck.test","password":"Demo1234!"}'
+# → {"data":{"user":{...},"accessToken":"eyJ...","refreshToken":"..."}}
+
+# 2) Usar el access token
+TOKEN=eyJ...
+curl $B/auth/me -H "Authorization: Bearer $TOKEN"
+
+# 3) Lectura pública (sin token)
+curl "$B/places?q=costa&sort=rating&pageSize=5"
+curl $B/home
+
+# 4) Crear una reseña (correo verificado)
+curl -X POST $B/places/1/reviews -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"rating":5,"comment":"Muy buen piso y sin policía."}'
+
+# 5) Subir una foto (multipart, campo "image")
+curl -X POST $B/places/1/images -H "Authorization: Bearer $TOKEN" -F image=@foto.jpg
+```
+**Ciclo de sesión.** El `accessToken` (JWT) dura 15 min. Ante `401 TOKEN_EXPIRED`, llamá a `POST /auth/refresh {refreshToken}`: devuelve un par nuevo y el refresh anterior queda revocado (rotación). Reutilizar un refresh ya rotado (`REFRESH_REUSED`) revoca toda la sesión de ese dispositivo. La app móvil lo hace sola, con una única renovación simultánea.
+
+**Ejemplo de respuesta de listado** (`GET /places?pageSize=1`):
+```json
+{ "data": { "items": [ { "id": 12, "name": "Spot de humo", "slug": "spot-de-humo", "zone": "Puerto",
+  "status": "published", "category": { "id": 1, "name": "Street" }, "city": { "id": 1, "name": "Mar del Plata" },
+  "coverUrl": "http://localhost:3000/uploads/places/….png", "avgRating": 0, "reviewCount": 0,
+  "publishedAt": "2026-10-31T17:06:58.000Z" } ],
+  "page": 1, "pageSize": 1, "total": 10, "totalPages": 10 } }
+```
+**Ejemplo de error:** `{ "error": { "code": "NOT_FOUND", "message": "Recurso no encontrado" } }`
+
+> Documentación completa de todos los módulos (autenticación, catálogo, reseñas, favoritos, reportes, destacados y administración).
 
 ## Convenciones
 - Éxito: `{ "data": ... }` (o `204` sin cuerpo). Error: `{ "error": { "code", "message", "details?" } }`.
@@ -47,7 +87,7 @@ Respuesta de sesión: `{ user, accessToken, refreshToken }`. `user` nunca incluy
 
 Política de contraseña: 8–72 bytes, con letras y números. Códigos: 6 dígitos, vigencia 15 min, máx. 5 intentos, solo vale el último emitido.
 
-**Decisión:** un usuario sin correo verificado **puede iniciar sesión**, pero no ejecutar operaciones que exijan `EMAIL_NOT_VERIFIED` (verificación adicional y, en etapas siguientes, publicar contenido). Motivo: Resend solo envía a destinatarios arbitrarios con un dominio propio verificado; exigir verificación para entrar dejaría fuera a los usuarios hasta configurarlo.
+**Decisión:** un usuario sin correo verificado **puede iniciar sesión**, pero no ejecutar operaciones que exijan `EMAIL_NOT_VERIFIED` (verificación adicional, publicar contenido, reseñar y reportar). Motivo: Resend solo envía a destinatarios arbitrarios con un dominio propio verificado; exigir verificación para entrar dejaría fuera a los usuarios hasta configurarlo.
 
 ## OAuth `/auth/oauth` — ver `docs/OAUTH.md`
 | Método y ruta | Auth | Descripción |
@@ -79,7 +119,7 @@ Política de contraseña: 8–72 bytes, con letras y números. Códigos: 6 dígi
 
 Cada acción queda en `audit_logs` (quién, qué, a quién, IP).
 
-## Permisos (matriz de la Etapa 2)
+## Permisos (autenticación y administración)
 | Recurso | Anónimo | Usuario | Moderador | Admin |
 |---|---|---|---|---|
 | Registro, login, recuperación, OAuth | ✔ | ✔ | ✔ | ✔ |
@@ -194,3 +234,30 @@ Se actualizan solos: un job cada hora y también al pedir `/home`. La selección
 ## Estadísticas y auditoría (solo admin)
 - `GET /admin/stats` — usuarios por rol/estado y altas recientes, contenido por estado, reseñas (visibles/pendientes/ocultas), reportes abiertos, favoritos, pendientes de moderación, reseñas por día (14 días) y mejor puntuados.
 - `GET /admin/audit?actorId=&action=&entityType=&page=` — registro de acciones administrativas (quién, qué, sobre qué, IP).
+
+---
+# Apéndice
+
+## Resumen de permisos por rol
+| Acción | Anónimo | Usuario (verificado) | Moderador | Admin |
+|---|---|---|---|---|
+| Leer catálogo publicado, reseñas visibles, `/home` | ✔ | ✔ | ✔ | ✔ |
+| Reseñar, favoritos, reportar, proponer contenido | — | ✔ | ✔ | ✔ |
+| Editar/eliminar lo propio | — | ✔ (propuestas no publicadas; reseñas propias) | ✔ | ✔ |
+| Ver y editar contenido ajeno no público | — | — | ✔ | ✔ |
+| Aprobar / rechazar / ocultar / restaurar (`/moderation/*`) | — | — | ✔ | ✔ |
+| Dar de baja o restaurar catálogo, eliminar reseñas ajenas | — | — | — | ✔ |
+| Usuarios, roles, destacados, ajustes, estadísticas, auditoría (`/admin/*`) | — | — | — | ✔ |
+| Crear catálogos de apoyo (categorías, marcas, ciudades…) | — | — | — | ✔ |
+
+El servidor valida el rol **en cada request** leyéndolo de la base (suspender o cambiar un rol surte efecto de inmediato); ocultar botones en la app no es una protección.
+
+## Límites y seguridad
+- Rate limiting: 300 req/15 min por IP (general), 20 req/15 min en `/auth/*`, 40 altas/subidas por usuario cada 15 min → `429 RATE_LIMITED`.
+- Consultas SQL parametrizadas; contraseñas con bcrypt; refresh y códigos guardados solo como hash.
+- Subidas: JPEG/PNG/WebP validados por firma del archivo, máx. 5 MB; servidas con `X-Content-Type-Options: nosniff`.
+- Cabeceras de seguridad con Helmet; respuestas de error sin trazas.
+- Tareas programadas dentro del proceso: baja de cuentas vencidas (03:15 UTC), limpieza de tokens (03:30) y destacados (cada hora).
+
+## Pruebas de la API
+`cd backend && npm test` → 198 pruebas de integración (supertest) contra MySQL real, verificadas en MariaDB 10.11 y MySQL 8.0.46.

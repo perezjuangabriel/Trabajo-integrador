@@ -18,7 +18,7 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 - [x] **Etapa 4 — Reseñas, favoritos, reportes** (COMPLETA, 179/179 en MySQL 8 y MariaDB): reseñas con promedios transaccionales y bloqueo por entidad (verificado con prueba de mutación), fotos, premoderación, moderación de reseñas, favoritos idempotentes, reportes con resolución, actividad del usuario. (promedios en transacción), favoritos, reportes, moderación, subida de imágenes
 - [x] **Etapa 5 — Destacados, panel admin, auditoría, estadísticas** (COMPLETA; ver `FEATURED_ALGORITHM.md`)
 - [x] **Etapa 6 — App móvil** (completa: `tsc` limpio, 16 pruebas del cliente API, bundle Android Hermes OK con `expo export`). NO probada en dispositivo/emulador
-- [x] **Etapa 7 — Documentación**: `USER_MANUAL.md`, `DEPLOY_RAILWAY.md`, `EAS_APK.md`, `OAUTH.md`, README
+- [x] **Etapa 7 — Documentación**: `MANUAL_DE_USUARIO.md`, `DEPLOY_RAILWAY.md`, `EAS_APK.md`, `OAUTH.md`, README
 
 ## Entorno de pruebas (la sandbox se reinicia; hay que recrearlo)
 - Shell = `/bin/sh` (dash): NO usar expansión de llaves `{a,b}` en mkdir.
