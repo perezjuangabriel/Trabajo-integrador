@@ -14,6 +14,7 @@ export async function search(f, db = pool) {
   if (f.statuses) w.add(`p.status IN (${f.statuses.map(() => '?').join(',')})`, ...f.statuses);
   if (!f.includeDeleted) w.add('p.deleted_at IS NULL');
   if (f.submittedBy) w.add('p.submitted_by = ?', f.submittedBy);
+  if (f.ids) w.add('p.id IN (?)', f.ids);
   if (f.q) { const like = `%${escapeLike(f.q)}%`; w.add('(p.name LIKE ? OR p.zone LIKE ? OR p.description LIKE ?)', like, like, like); }
   // La categoría vale si es la principal o una de las secundarias.
   if (f.categoryId) w.add('(p.category_id = ? OR EXISTS (SELECT 1 FROM place_categories pc WHERE pc.place_id = p.id AND pc.category_id = ?))', f.categoryId, f.categoryId);

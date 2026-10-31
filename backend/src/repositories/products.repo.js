@@ -16,6 +16,7 @@ export async function search(f, db = pool) {
   if (f.statuses) w.add(`p.status IN (${f.statuses.map(() => '?').join(',')})`, ...f.statuses);
   if (!f.includeDeleted) w.add('p.deleted_at IS NULL');
   if (f.submittedBy) w.add('p.submitted_by = ?', f.submittedBy);
+  if (f.ids) w.add('p.id IN (?)', f.ids);
   if (f.q) { const like = `%${escapeLike(f.q)}%`; w.add('(p.name LIKE ? OR p.description LIKE ? OR b.name LIKE ?)', like, like, like); }
   if (f.categoryId) w.add('p.category_id = ?', f.categoryId);
   if (f.brandId) w.add('p.brand_id = ?', f.brandId);

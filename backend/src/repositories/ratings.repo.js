@@ -29,3 +29,7 @@ export async function entitiesReviewedBy(userId, db = pool) {
     video: r2.map((r) => r.video_id),
   };
 }
+
+const ENTITY_TABLE = { place: 'places', product: 'products', video: 'videos' };
+/** Bloquea la fila de la entidad hasta el commit: serializa los recálculos de promedio de reseñas simultáneas. */
+export const lockEntity = (kind, id, db = pool) => db.query(`SELECT id FROM ${ENTITY_TABLE[kind]} WHERE id = ? FOR UPDATE`, [id]);

@@ -1,7 +1,7 @@
 # API REST SPOTCHECK — v1
 
 Base: `{PUBLIC_BASE_URL}/api/v1` · JSON · fechas ISO-8601 en UTC.
-> Documentado hasta la **Etapa 3** (autenticación, perfil, roles y catálogo). Se amplía en cada etapa.
+> Documentado hasta la **Etapa 5** (autenticación, catálogo, reseñas, favoritos, reportes, destacados y administración).
 
 ## Convenciones
 - Éxito: `{ "data": ... }` (o `204` sin cuerpo). Error: `{ "error": { "code", "message", "details?" } }`.
@@ -148,3 +148,49 @@ Transición no permitida → `409 INVALID_TRANSITION`. La resolución es atómic
 - **Baja de lugares/productos/videos: solo lógica.** Se conservan reseñas, favoritos, reportes y trazabilidad; no hay borrado definitivo por API.
 - Un usuario no puede dar de baja lo ya publicado; un moderador oculta, no elimina.
 - Las categorías y marcas en uso se desactivan, no se borran.
+
+---
+# Reseñas, favoritos, reportes y actividad (Etapa 4)
+
+## Reseñas
+Una reseña **por usuario y entidad** (`409 REVIEW_EXISTS`). Puntuación entera 1–5; comentario 3–2000 caracteres. Solo las reseñas `visible` cuentan en `avgRating`/`reviewCount` (los pendientes, ocultos y eliminados no). El promedio se recalcula **en la misma transacción** y con la fila de la entidad bloqueada, así que no se corrompe con envíos simultáneos.
+| Ruta | Auth | Descripción |
+|---|---|---|
+| `GET /places\|products\|videos/:id/reviews` | — | Paginado. `sort`=`newest`·`oldest`·`rating_desc`·`rating_asc`, `rating=1..5`. Devuelve `summary{avgRating,reviewCount,distribution}` y `myReview` (si hay sesión, aunque esté pendiente u oculta). El staff puede usar `status=pending\|hidden\|all` |
+| `POST /places\|products\|videos/:id/reviews` | verificado | `{rating, comment}` → 201. El contenido debe estar publicado |
+| `GET /reviews/:id`, `GET /video-reviews/:id` | — | Pública si es visible; si no, autor y staff |
+| `PATCH /reviews/:id`, `PATCH /video-reviews/:id` | autor | `{rating?, comment?}`. Una reseña oculta por moderación sigue oculta; con premoderación activa, editar vuelve a revisión |
+| `DELETE /reviews/:id`, `DELETE /video-reviews/:id` | autor o admin | 204. Baja física (permite reseñar de nuevo) y borra las fotos del disco. Moderador: 403 (oculta, no elimina) |
+| `POST /reviews/:id/images`, `DELETE /reviews/:id/images/:imageId` | autor | Fotos (máx. 4; JPEG/PNG/WebP ≤ 5 MB). Los videos no admiten fotos |
+| `GET /users/me/reviews?kind=place\|product\|video` | usuario | Mis reseñas |
+Moderación de reseñas: `POST /moderation/review/:id/{approve\|hide\|restore}` y `/moderation/video_review/:id/...`; cola de pendientes `GET /moderation/reviews?type=review\|video_review`.
+
+## Favoritos (`/favorites`, requiere sesión)
+`POST /favorites {kind,id}` (201 nuevo · 200 ya estaba; idempotente, `UNIQUE` en la base), `DELETE /favorites/:kind/:id` (204 idempotente), `GET /favorites?kind=` (tarjetas paginadas, la más reciente primero), `GET /favorites/ids` (`{place:[],product:[],video:[]}` para pintar corazones). Solo contenido público; si se oculta deja de listarse pero el favorito se conserva.
+
+## Reportes
+`POST /reports {targetType: place|product|video|review|video_review, targetId, reason: spam|offensive|inaccurate|duplicate|illegal|other, details?}` (verificado; no se puede reportar lo propio `SELF_REPORT` ni dos veces `ALREADY_REPORTED`), `GET /reports/mine`.
+Moderación (moderador/admin): `GET /moderation/reports?status=open&targetType=`, `GET /moderation/reports/:id`, `POST /moderation/reports/:id/resolve {note?, hideTarget?}` (con `hideTarget` oculta el contenido o la reseña y cierra los demás reportes abiertos sobre él), `POST /moderation/reports/:id/dismiss {note?}`. `409 ALREADY_HANDLED` si ya se resolvió. Todo queda en el historial de moderación.
+
+## Actividad
+`GET /users/me/activity` — línea de tiempo paginada de reseñas, favoritos y propuestas.
+
+---
+# Destacados, Home y administración (Etapa 5)
+
+## `GET /home` (público)
+`{ featuredVideo, featuredProduct, featuredPlace, recentReviews[], popularPlaces[], popularProducts[], generatedAt }`. Los destacados salen de `featured_content` (persistidos: todos los usuarios ven lo mismo durante la vigencia). Un destacado que dejó de ser público se reemplaza o se omite (`null`).
+
+## Destacados (`/admin/featured`, solo admin)
+Ranuras: `video`, `product`, `place`. Cada una tiene modo `manual` o `automatic`.
+| Ruta | Descripción |
+|---|---|
+| `GET /admin/featured` | Por ranura: configuración, destacado vigente (con estado `valid`/`expired`/`unavailable`) e historial reciente |
+| `PUT /admin/featured/:slot` | `{id, endsAt?}` — **manual**: fija el contenido exacto. `endsAt` opcional (en modo automático, vence a las `periodHours`; en manual dura hasta reemplazarlo) |
+| `PATCH /admin/featured/:slot/settings` | `{mode?, periodHours?, minReviews?, recencyDays?, preferredCategoryId?}` |
+| `POST /admin/featured/:slot/refresh` | Fuerza una nueva selección automática (`409` si la ranura está en manual) |
+Se actualizan solos: un job cada hora y también al pedir `/home`. La selección automática es atómica (no se duplica con pedidos simultáneos). Algoritmo y criterios: `docs/FEATURED_ALGORITHM.md`.
+
+## Estadísticas y auditoría (solo admin)
+- `GET /admin/stats` — usuarios por rol/estado y altas recientes, contenido por estado, reseñas (visibles/pendientes/ocultas), reportes abiertos, favoritos, pendientes de moderación, reseñas por día (14 días) y mejor puntuados.
+- `GET /admin/audit?actorId=&action=&entityType=&page=` — registro de acciones administrativas (quién, qué, sobre qué, IP).

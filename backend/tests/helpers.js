@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { expect } from 'vitest';
 import { createApp } from '../src/app.js';
 import { pool } from '../src/config/db.js';
 import { setMailTransport } from '../src/services/mail.service.js';
@@ -54,3 +55,26 @@ export const placeBody = (o = {}) => ({
   hours: [{ weekday: 1, opensAt: '10:00', closesAt: '20:00' }], ...o,
 });
 export const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(64, 1)]);
+
+// Contenido nuevo y publicado (lo crea el staff) para que cada prueba parta de promedios en cero.
+export async function freshContent(kind) {
+  const mod = await staffAuth('moderator');
+  const bodies = {
+    place: ['/api/v1/places', placeBody(), 'place'],
+    product: ['/api/v1/products', { name: uniq('Prod'), brandId: 1, categoryId: 5 }, 'product'],
+    video: ['/api/v1/videos', { title: uniq('Video'), url: `https://example.com/v/${Date.now()}${n++}`, categoryId: 13 }, 'video'],
+  };
+  const [route, body] = bodies[kind];
+  const r = await api().post(route).set(mod).send(body);
+  return r.body.data[kind].id;
+}
+const AGG = { place: ['places', 'reviews', 'place_id'], product: ['products', 'reviews', 'product_id'], video: ['videos', 'video_reviews', 'video_id'] };
+/** La caché avg_rating/review_count debe igualar al recálculo con SOLO reseñas visibles. */
+export async function expectAggregates(kind, id) {
+  const [entity, table, fk] = AGG[kind];
+  const [[e]] = await db.query(`SELECT avg_rating, review_count FROM ${entity} WHERE id = ?`, [id]);
+  const [[c]] = await db.query(`SELECT COUNT(*) n, COALESCE(ROUND(AVG(rating),2),0) a FROM ${table} WHERE ${fk} = ? AND status = 'visible'`, [id]);
+  expect(e.review_count).toBe(c.n);
+  expect(Number(e.avg_rating)).toBeCloseTo(Number(c.a), 2);
+  return { avg: Number(e.avg_rating), count: e.review_count };
+}

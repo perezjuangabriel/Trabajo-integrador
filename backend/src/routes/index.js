@@ -9,6 +9,9 @@ import { createPlacesRouter } from './places.routes.js';
 import { createProductsRouter } from './products.routes.js';
 import { createVideosRouter } from './videos.routes.js';
 import { createModerationRouter } from './moderation.routes.js';
+import { createReviewsRouter } from './reviews.routes.js';
+import { createFavoritesRouter } from './favorites.routes.js';
+import { createReportsRouter } from './reports.routes.js';
 
 export function createApiRouter(limiters) {
   const api = Router();
@@ -25,5 +28,8 @@ export function createApiRouter(limiters) {
   api.use('/products', createProductsRouter({ submitLimiter: limiters.submit }));
   api.use('/videos', createVideosRouter({ submitLimiter: limiters.submit }));
   api.use('/moderation', createModerationRouter());
+  api.use(createReviewsRouter({ submitLimiter: limiters.submit }));
+  api.use('/favorites', createFavoritesRouter());
+  api.use('/reports', createReportsRouter({ submitLimiter: limiters.submit }));
   return api;
 }

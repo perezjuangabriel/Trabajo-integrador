@@ -14,6 +14,7 @@ export async function search(f, db = pool) {
   if (f.statuses) w.add(`v.status IN (${f.statuses.map(() => '?').join(',')})`, ...f.statuses);
   if (!f.includeDeleted) w.add('v.deleted_at IS NULL');
   if (f.submittedBy) w.add('v.submitted_by = ?', f.submittedBy);
+  if (f.ids) w.add('v.id IN (?)', f.ids);
   if (f.q) { const like = `%${escapeLike(f.q)}%`; w.add('(v.title LIKE ? OR v.description LIKE ?)', like, like); }
   if (f.categoryId) w.add('v.category_id = ?', f.categoryId);
   if (f.minRating !== undefined) w.add('v.avg_rating >= ?', f.minRating);

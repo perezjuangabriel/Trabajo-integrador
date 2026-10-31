@@ -81,3 +81,10 @@ export async function update(user, id, input) {
 }
 export const remove = (user, id, ip) => cc.softDelete('product', user, id, ip);
 export const restore = (user, id, ip) => cc.restoreDeleted('product', user, id, ip);
+
+/** Tarjetas de un conjunto de ids (solo publicados). Lo usan los favoritos. */
+export async function cardsByIds(viewer, ids) {
+  if (!ids.length) return new Map();
+  const { rows } = await repo.search({ ids, statuses: ['published'], sort: 'newest', limit: ids.length, offset: 0 });
+  return new Map(rows.map((r) => [r.id, card(r, viewer)]));
+}

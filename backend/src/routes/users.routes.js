@@ -5,6 +5,10 @@ import * as c from '../controllers/user.controller.js';
 import * as v from '../validators/user.validators.js';
 import * as m from '../controllers/moderation.controller.js';
 import { submissionsSchema } from '../validators/moderation.validators.js';
+import * as reviewsC from '../controllers/reviews.controller.js';
+import { myReviewsSchema } from '../validators/reviews.validators.js';
+import * as activity from '../services/activity.service.js';
+import { pagination } from '../validators/common.js';
 
 export const createUsersRouter = () => {
   const r = Router();
@@ -13,6 +17,8 @@ export const createUsersRouter = () => {
   r.patch('/me', validate(v.updateProfileSchema), c.updateMe);
   r.get('/me/linked-accounts', c.linkedAccounts);
   r.get('/me/submissions', validate(submissionsSchema), m.mySubmissions);
+  r.get('/me/reviews', validate(myReviewsSchema), reviewsC.mine);
+  r.get('/me/activity', validate({ query: pagination }), async (req, res) => res.json({ data: await activity.list(req.user, req.valid.query) }));
   // Baja de cuenta: contraseña (si tiene) + verificación adicional por correo.
   r.post('/me/deletion-request', requireSensitiveVerification, validate(v.deletionSchema), c.requestDeletion);
   r.post('/me/deletion-cancel', c.cancelDeletion);
