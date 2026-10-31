@@ -12,7 +12,7 @@ Expo SDK 58 (`expo@58.0.21`) → React 19.3.0, React Native 0.88.1, expo-secure-
 Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonwebtoken ^9, helmet ^8, express-rate-limit ^8, multer ^2, resend ^6, node-cron ^4, dotenv ^18; dev: vitest ^5, supertest ^7.
 
 ## Estado
-- [x] **Etapa 1 — Cimientos** (COMPLETA y probada): estructura del repo, `database/schema.sql` (37 tablas), `seed.sql`, `backend/src/config/{env,db}.js`, `scripts/db-setup.js`, `tests/schema.test.js`, `docs/DATABASE.md`.
+- [x] **Etapa 1 — Cimientos** (COMPLETA y probada): estructura del repo, `database/schema.sql` (30 tablas), `seed.sql`, `backend/src/config/{env,db}.js`, `scripts/db-setup.js`, `tests/schema.test.js`, `docs/DATABASE.md`.
 - [ ] Etapa 2 — Auth y roles  ← **SIGUIENTE**
 - [ ] Etapa 3 — Catálogo (spots, productos, videos, categorías, marcas) con ABMLC, filtros y paginación
 - [ ] Etapa 4 — Reseñas (promedios en transacción), favoritos, reportes, moderación, subida de imágenes

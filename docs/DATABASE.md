@@ -3,7 +3,7 @@
 Motor: MySQL 8 / MariaDB 10.4+ (InnoDB, utf8mb4, fechas en UTC).
 Archivos: `database/schema.sql` (estructura), `database/seed.sql` (datos ficticios), `database/00_create_database.sql` (uso manual con XAMPP).
 
-## Tablas (37)
+## Tablas (30)
 Identidad: `users`, `auth_accounts`, `refresh_tokens`, `auth_tokens`.
 Catálogos: `categories`, `brands`, `cities`, `surface_types`, `obstacle_types`, `amenities`.
 Lugares: `places`, `place_categories`, `place_obstacles`, `place_amenities`, `place_hours`, `place_images`.
