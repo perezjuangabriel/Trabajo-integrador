@@ -12,6 +12,8 @@ import { createModerationRouter } from './moderation.routes.js';
 import { createReviewsRouter } from './reviews.routes.js';
 import { createFavoritesRouter } from './favorites.routes.js';
 import { createReportsRouter } from './reports.routes.js';
+import { optionalAuthenticate } from '../middleware/authenticate.js';
+import { getHome } from '../controllers/admin.controller.js';
 
 export function createApiRouter(limiters) {
   const api = Router();
@@ -30,6 +32,7 @@ export function createApiRouter(limiters) {
   api.use('/moderation', createModerationRouter());
   api.use(createReviewsRouter({ submitLimiter: limiters.submit }));
   api.use('/favorites', createFavoritesRouter());
+  api.get('/home', optionalAuthenticate, getHome);
   api.use('/reports', createReportsRouter({ submitLimiter: limiters.submit }));
   return api;
 }
