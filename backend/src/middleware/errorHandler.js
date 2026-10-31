@@ -24,6 +24,12 @@ export function errorHandler(err, req, res, next) {
   if (err.type === 'entity.too.large') {
     return res.status(413).json({ error: { code: 'PAYLOAD_TOO_LARGE', message: 'Cuerpo demasiado grande' } });
   }
+  if (err.code === 'ER_NO_REFERENCED_ROW_2') {
+    return res.status(400).json({ error: { code: 'INVALID_REFERENCE', message: 'Referencia a un registro inexistente' } });
+  }
+  if (err.code === 'ER_ROW_IS_REFERENCED_2') {
+    return res.status(409).json({ error: { code: 'IN_USE', message: 'El registro está en uso y no puede eliminarse' } });
+  }
   if (err.code === 'ER_DUP_ENTRY') {
     return res.status(409).json({ error: { code: 'CONFLICT', message: 'El registro ya existe' } });
   }

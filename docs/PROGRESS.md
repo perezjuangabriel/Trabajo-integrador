@@ -14,8 +14,8 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 ## Estado
 - [x] **Etapa 1 — Cimientos** (COMPLETA y probada): estructura del repo, `database/schema.sql` (30 tablas), `seed.sql`, `backend/src/config/{env,db}.js`, `scripts/db-setup.js`, `tests/schema.test.js`, `docs/DATABASE.md`.
 - [x] **Etapa 2 — Auth y roles** (COMPLETA, 75/75 pruebas en MySQL 8 y MariaDB): registro, login, refresh con rotación y detección de reuso, bloqueo por intentos, verificación de correo, recuperación y cambio de contraseña, verificación adicional (código -> token 5 min), OAuth Google/GitHub/Discord (implementado; **sin probar contra proveedores reales**), perfil, baja de cuenta con purga, gestión de usuarios/roles/suspensión del admin con auditoría, `npm run create-admin`. Docs: `API.md`, `OAUTH.md`.
-- [ ] Etapa 3 — Catálogo  ← **SIGUIENTE** (spots, productos, videos, categorías, marcas) con ABMLC, filtros y paginación
-- [ ] Etapa 4 — Reseñas (promedios en transacción), favoritos, reportes, moderación, subida de imágenes
+- [x] **Etapa 3 — Catálogo** (COMPLETA, 137/137 pruebas en MySQL 8 y MariaDB): lugares, productos y videos con ABMLC, búsqueda, filtros, orden y paginación; catálogos de apoyo (categorías, marcas, ciudades, superficies, obstáculos, servicios); flujo de moderación (cola, aprobar/rechazar/ocultar/restaurar, historial); "mis propuestas"; subida de imágenes a disco con validación por firma; configuración de moderación editable por el admin. (spots, productos, videos, categorías, marcas) con ABMLC, filtros y paginación
+- [ ] Etapa 4 — Reseñas  ← **SIGUIENTE** (promedios en transacción), favoritos, reportes, moderación, subida de imágenes
 - [ ] Etapa 5 — Destacados (manual/automático, job cada 24 h), panel admin, auditoría, estadísticas
 - [ ] Etapa 6 — App móvil (Expo 58, React Navigation, temas claro/oscuro/sistema, SecureStore)
 - [ ] Etapa 7 — Documentación final, OAuth/EAS/Railway guías, manual de usuario
@@ -59,3 +59,16 @@ APK con EAS Build (cuenta Expo), prueba en Android real, credenciales OAuth (Goo
 
 ## Pendientes de cliente acumulados
 OAuth real (Google/GitHub/Discord) y su prueba; `RESEND_API_KEY` + dominio verificado (sin dominio, Resend solo entrega a tu propio correo); resto igual que arriba.
+
+## Estructura agregada en la Etapa 3
+`config/catalog.js` (KINDS: tablas, claves de configuración, límites) · `repositories/{places,products,videos,lookups,catalogCommon,settings}.repo.js` · `services/{places,products,videos,lookups,moderation,settings,catalogCommon,image}.service.js` · `validators/{catalog.common,places,products,videos,lookups,moderation}.validators.js` · `middleware/upload.js` (multer en memoria) · `utils/{slug,videoUrl,pagination,urls}.js`.
+- Reglas de visibilidad/edición/baja centralizadas en `catalogCommon.service.js` (`canView`, `canEdit`, `canDelete`, `assertVisible`, `assertEditable`). Lo no visible responde 404 (también en DELETE).
+- Búsqueda de texto con `LIKE` escapado (no FULLTEXT): sin mínimo de longitud de palabra y sin lista de palabras vacías. Los índices FULLTEXT del esquema quedan disponibles para mejorar la relevancia más adelante.
+- Imágenes: se guardan con ruta relativa `/uploads/...` y la API las devuelve absolutas con `PUBLIC_BASE_URL`. Se valida la firma (JPEG/PNG/WebP), no se decodifica la imagen (no hay redimensionado ni verificación de que sea una imagen completa válida).
+- Para la Etapa 4: reutilizar `ratings.repo.recompute`, `catalogCommon.repo` (estado/baja), `image.service.storeImage` (fotos de reseñas, subcarpeta `reviews/`) y `requireVerifiedEmail`; los videos usan `video_reviews` (sin fotos).
+- Para la Etapa 5: al ocultar/dar de baja un contenido destacado hay que reemplazar el destacado (`featured_content`); hoy no hay vínculo automático.
+
+## Lecciones de la Etapa 3
+- Hallazgo real: `DELETE` sobre una propuesta ajena respondía 403 (revelaba que existía); ahora 404, como al verla.
+- Prueba de mutación: romper la validación de firma de imagen y la visibilidad de pendientes hace fallar las pruebas (confirma que no son vacías).
+- `LIKE '%costa%'` coincide con "Costanera": en pruebas usar valores que no sean subcadena de otros.

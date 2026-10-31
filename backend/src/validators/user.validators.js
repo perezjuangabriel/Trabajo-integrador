@@ -21,3 +21,14 @@ export const adminListUsersSchema = {
 export const setRoleSchema = { params: idParam, body: z.object({ role: z.enum(['user', 'moderator']) }) };
 export const suspendSchema = { params: idParam, body: z.object({ reason: z.string().trim().min(3).max(255) }) };
 export const userIdSchema = { params: idParam };
+
+// Configuración editable por el admin (lista blanca de claves).
+export const updateSettingsSchema = {
+  body: z.object({
+    require_moderation_places: z.boolean(),
+    require_moderation_products: z.boolean(),
+    require_moderation_videos: z.boolean(),
+    premoderate_reviews: z.boolean(),
+    account_deletion_grace_days: z.number().int().min(1).max(90),
+  }).partial().strict().refine((v) => Object.keys(v).length > 0, 'Enviá al menos un campo'),
+};

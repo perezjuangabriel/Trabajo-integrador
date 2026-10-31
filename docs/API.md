@@ -1,7 +1,7 @@
 # API REST SPOTCHECK — v1
 
 Base: `{PUBLIC_BASE_URL}/api/v1` · JSON · fechas ISO-8601 en UTC.
-> Documentado hasta la **Etapa 2** (autenticación, perfil, roles). Se amplía en cada etapa.
+> Documentado hasta la **Etapa 3** (autenticación, perfil, roles y catálogo). Se amplía en cada etapa.
 
 ## Convenciones
 - Éxito: `{ "data": ... }` (o `204` sin cuerpo). Error: `{ "error": { "code", "message", "details?" } }`.
@@ -85,3 +85,66 @@ Cada acción queda en `audit_logs` (quién, qué, a quién, IP).
 | Registro, login, recuperación, OAuth | ✔ | ✔ | ✔ | ✔ |
 | Perfil propio, sesiones, baja propia | — | ✔ | ✔ | ✔ (sin baja) |
 | `/admin/*` | 401 | 403 | 403 | ✔ |
+
+---
+# Catálogo (Etapa 3)
+
+Listados paginados: `{ items, page, pageSize, total, totalPages }` (`page` ≥ 1, `pageSize` 1–100; 1–200 en catálogos de apoyo). Un parámetro inválido → `400 VALIDATION_ERROR`.
+Lectura pública con sesión opcional (`Authorization` si la hay: el autor y el staff ven más). Todo `POST/PATCH/DELETE` exige sesión; las altas, ediciones y subidas exigen **correo verificado** (`403 EMAIL_NOT_VERIFIED`). Las altas y subidas tienen un límite por usuario (40 / 15 min).
+
+## Estados y visibilidad
+`pending` → `published` | `rejected` · `published` ↔ `hidden` · `deleted_at` = baja lógica.
+| Quién | Ve | Edita | Da de baja |
+|---|---|---|---|
+| Público | solo `published` | — | — |
+| Autor (usuario) | lo suyo en cualquier estado | mientras esté `pending` o `rejected` (si corrige uno rechazado vuelve a `pending`) | su propuesta `pending`/`rejected` |
+| Moderador | todo menos las bajas | todo (cada edición queda en el historial de moderación) | — |
+| Admin | todo, incluidas las bajas (`includeDeleted=true`) | todo | cualquiera; puede restaurar |
+
+Lo que un usuario no puede ver responde `404` (no se revela que existe). Los usuarios no pueden fijar `status`, puntuaciones ni autor: los campos desconocidos se rechazan (`400`).
+La moderación de altas de usuarios comunes es configurable (`require_moderation_places|products|videos`); moderadores y admin publican directo. Máx. 10 propuestas pendientes por usuario y tipo (`409 TOO_MANY_PENDING`).
+
+## Lugares `/places`
+| Ruta | Auth | Descripción |
+|---|---|---|
+| `GET /places` | — | Filtros: `q` (nombre/zona/descripción, sin distinguir tildes), `categoryId` (principal **o** secundaria), `cityId`, `zone`, `minRating`, `minReviews`, `publishedAfter`/`publishedBefore` (`AAAA-MM-DD`), `sort` = `newest`(def.)·`rating`·`reviews`·`name`. Staff: `status` = `pending`·`published`·`rejected`·`hidden`·`all`. Admin: `includeDeleted=true` |
+| `GET /places/:ref` | — | `:ref` = id o slug. Incluye categorías secundarias, obstáculos, servicios, horarios, imágenes, `permissions` |
+| `POST /places` | verificado | `{name, categoryId, categoryIds?, cityId \| newCity{name,region?,country?}, zone?, address?, latitude?+longitude?, surfaceTypeId?, obstacleIds?, amenityIds?, hours?[{weekday 0-6, opensAt, closesAt}], description?}` → 201. `409 DUPLICATE_PLACE` (mismo nombre y ciudad) |
+| `PATCH /places/:id` | autor/staff | Mismos campos, todos opcionales; las listas enviadas **reemplazan** a las anteriores |
+| `DELETE /places/:id` | autor/admin | 204. Baja lógica. `409 NOT_DELETABLE` si el autor intenta borrar lo ya publicado |
+| `POST /places/:id/restore` | admin | 204 |
+| `POST /places/:id/images` | autor/staff | `multipart/form-data`, campo `image` (JPEG, PNG o WebP, máx. 5 MB, máx. 8 por lugar) → 201 `{image:{id,url,position}}`. `400 INVALID_IMAGE`, `413 FILE_TOO_LARGE` |
+| `DELETE /places/:id/images/:imageId` | autor/staff | 204 (borra también el archivo) |
+
+## Productos `/products`
+Igual que lugares, con: filtros `categoryId`, `brandId`, `minPrice`, `maxPrice` (excluye los que no tienen precio), `minRating`, `minReviews`; `sort` = `newest`·`rating`·`reviews`·`name`·`price_asc`·`price_desc` (sin precio al final). Cuerpo: `{name, brandId, categoryId, description?, price?: {amount, currency}|null, specs?: [{key,value}]}`. `409 DUPLICATE_PRODUCT` (misma marca y nombre). Imágenes: igual que lugares. No hay carrito ni pagos: el precio es orientativo.
+
+## Videos `/videos`
+`GET /videos` (filtros `q`, `categoryId`, `minRating`, `minReviews`, fechas; `sort` = `newest`·`rating`·`reviews`·`title`), `GET /videos/:id`, `POST`, `PATCH`, `DELETE`, `POST /:id/restore`. Cuerpo: `{title, url, categoryId, description?}`.
+- Solo `http(s)` sin credenciales. YouTube (watch, youtu.be, shorts, embed) y Vimeo se normalizan a un enlace canónico: el mismo video con otro formato de URL da `409 VIDEO_ALREADY_EXISTS`.
+- Respuesta: `url` (original), `provider` (`youtube`·`vimeo`·`other`), `embedUrl` (**solo** si el proveedor permite embeber; si es `null`, la app abre `url`), `thumbnailUrl` (YouTube se completa solo).
+
+## Catálogos de apoyo
+`categories` (`?type=place|product|video`), `brands`, `cities`, `surface-types`, `obstacle-types`, `amenities`: `GET /x` (paginado, `?q=`), `GET /x/:id`, y para el **admin** `POST /x`, `PATCH /x/:id`, `DELETE /x/:id`. `GET /catalog/options` devuelve superficies, obstáculos y servicios juntos.
+Baja: si nadie lo usa se elimina (`{result:"deleted"}`); si es categoría o marca en uso se **desactiva** (`{result:"deactivated"}`, deja de ofrecerse pero conserva el historial); ciudad, superficie, obstáculo o servicio en uso → `409 IN_USE`. Cada cambio queda en `audit_logs`.
+
+## Moderación `/moderation` (moderador o admin)
+| Ruta | Descripción |
+|---|---|
+| `GET /moderation/queue?kind=place\|product\|video&status=pending` | Cola de revisión (más antiguos primero) |
+| `POST /moderation/:kind/:id/approve` | `pending`/`rejected` → `published` (fija `published_at`) |
+| `POST /moderation/:kind/:id/reject` | `{note}` obligatorio (3–500 caracteres) → `rejected`; el autor ve el motivo |
+| `POST /moderation/:kind/:id/hide` | `published` → `hidden` (`{note?}`) |
+| `POST /moderation/:kind/:id/restore` | `hidden` → `published` |
+| `GET /moderation/logs` | Historial. El moderador ve solo el suyo; el admin ve todo (`moderatorId`, `action`, `targetType`) |
+Transición no permitida → `409 INVALID_TRANSITION`. La resolución es atómica (dos moderadores no pisan la misma revisión).
+
+## Otros
+- `GET /users/me/submissions?kind=place|product|video&status=` — mis propuestas con estado y motivo de rechazo.
+- `GET /admin/settings`, `PATCH /admin/settings` (admin) — `require_moderation_places|products|videos`, `premoderate_reviews`, `account_deletion_grace_days`.
+- `GET /uploads/...` — imágenes (solo lectura, `X-Content-Type-Options: nosniff`). Las respuestas devuelven URLs absolutas.
+
+## Excepciones ABMLC documentadas
+- **Baja de lugares/productos/videos: solo lógica.** Se conservan reseñas, favoritos, reportes y trazabilidad; no hay borrado definitivo por API.
+- Un usuario no puede dar de baja lo ya publicado; un moderador oculta, no elimina.
+- Las categorías y marcas en uso se desactivan, no se borran.

@@ -2,6 +2,7 @@ import * as users from '../repositories/users.repo.js';
 import * as accounts from '../repositories/authAccounts.repo.js';
 import * as deletion from '../services/accountDeletion.service.js';
 import * as admin from '../services/adminUser.service.js';
+import * as settings from '../services/settings.service.js';
 
 // --- Perfil propio ---
 export const getMe = async (req, res) => res.json({ data: { user: users.toPublicUser(req.user) } });
@@ -19,3 +20,6 @@ export const adminSuspend = async (req, res) =>
   res.json({ data: { user: await admin.suspend(req.user, req.valid.params.id, req.valid.body.reason, req.ip) } });
 export const adminReactivate = async (req, res) =>
   res.json({ data: { user: await admin.reactivate(req.user, req.valid.params.id, req.ip) } });
+
+export const adminSettings = async (req, res) => res.json({ data: { settings: await settings.list() } });
+export const adminUpdateSettings = async (req, res) => res.json({ data: { settings: await settings.update(req.user, req.valid.body, req.ip) } });

@@ -12,5 +12,7 @@ export const createAdminRouter = () => {
   r.patch('/users/:id/role', validate(v.setRoleSchema), c.adminSetRole);
   r.post('/users/:id/suspend', validate(v.suspendSchema), c.adminSuspend);
   r.post('/users/:id/reactivate', validate(v.userIdSchema), c.adminReactivate);
+  r.get('/settings', c.adminSettings);
+  r.patch('/settings', validate(v.updateSettingsSchema), c.adminUpdateSettings);
   return r;
 };

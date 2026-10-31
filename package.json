@@ -1,0 +1,14 @@
+{
+  "name": "spotcheck",
+  "private": true,
+  "version": "0.3.0",
+  "description": "SPOTCHECK - app de reseñas de skate (monorepo: backend, database, docs, mobile)",
+  "scripts": {
+    "setup": "npm --prefix backend install",
+    "db:seed": "npm --prefix backend run db:seed",
+    "dev": "npm --prefix backend run dev",
+    "start": "npm --prefix backend start",
+    "test": "npm --prefix backend test",
+    "create-admin": "npm --prefix backend run create-admin"
+  }
+}

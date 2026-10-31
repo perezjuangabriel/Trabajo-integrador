@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'node:path';
 import helmet from 'helmet';
 import cors from 'cors';
 import { env } from './config/env.js';
@@ -15,6 +16,13 @@ export function createApp({ limiterOptions } = {}) {
   // La app móvil no usa CORS; solo se habilita para los orígenes configurados (p. ej. un panel web).
   app.use(cors({ origin: env.CORS_ORIGINS.length ? env.CORS_ORIGINS : false }));
   app.use(express.json({ limit: '100kb' }));
+
+  // Imágenes subidas (disco local / volumen de Railway). Solo lectura, sin listado de directorios,
+  // con nosniff para que el navegador no reinterprete el tipo de archivo.
+  app.use('/uploads', express.static(path.resolve(env.UPLOADS_DIR), {
+    index: false, dotfiles: 'deny', maxAge: '7d', immutable: true,
+    setHeaders: (res) => { res.set('X-Content-Type-Options', 'nosniff'); res.set('Cross-Origin-Resource-Policy', 'cross-origin'); },
+  }));
 
   const limiters = createLimiters(limiterOptions);
   app.use('/api/v1', limiters.general, createApiRouter(limiters));

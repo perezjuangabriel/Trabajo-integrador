@@ -9,10 +9,18 @@ App móvil de reseñas de skate: spots, skateparks, productos y videos. Monorepo
 | `docs/` | `API.md`, `OAUTH.md`, `DATABASE.md`, `PROGRESS.md` (estado y contexto para continuar) |
 | `mobile/` | App Expo SDK 58 (Etapa 6, aún no creada) |
 
-> **Estado:** Etapas 1 (base de datos) y 2 (autenticación y roles) completas. Ver `docs/PROGRESS.md`.
+> **Estado:** Etapas 1 (base de datos), 2 (autenticación y roles) y 3 (catálogo: lugares, productos, videos, moderación, imágenes) completas. Ver `docs/PROGRESS.md`.
 
 ## Abrir en VS Code
-`code spotcheck` (o *Archivo → Abrir carpeta*). Instalar dependencias: `cd backend && npm install`.
+`code spotcheck` (o *Archivo → Abrir carpeta*). Requisitos: **Node.js 20 o superior** y MySQL/MariaDB (XAMPP sirve).
+Desde la carpeta raíz (o con *Terminal → Ejecutar tarea…* que ya trae los pasos 1, 2 y 3; **F5** depura la API):
+```bash
+npm run setup          # instala dependencias del backend
+cp backend/.env.example backend/.env     # y completar JWT_ACCESS_SECRET (mín. 32 caracteres)
+npm run db:seed        # crea la base y los datos de prueba (DESTRUCTIVO para la base `spotcheck`)
+npm run dev            # API en http://localhost:3000/api/v1/health
+npm test               # 137 pruebas (usa su propia base `spotcheck_test`)
+```
 
 ## Puesta en marcha local (XAMPP u otro MySQL/MariaDB)
 1. Iniciar MySQL en XAMPP (el usuario `root` sin contraseña es el valor por defecto).
@@ -30,9 +38,13 @@ Sin Node: importar a mano en phpMyAdmin `database/00_create_database.sql`, luego
 
 ## Pruebas
 ```bash
-cd backend && npm test      # recrea la base spotcheck_test y corre 75 pruebas
+cd backend && npm test      # recrea la base spotcheck_test y corre 137 pruebas
 ```
 Nunca toca `spotcheck` ni `MYSQL_URL` (salvaguarda: la base de pruebas debe terminar en `_test`). Para MySQL en otro puerto: `DB_PORT=3307 npm test`.
+
+## Probar la API a mano
+Con `npm run dev` y la base sembrada: `GET http://localhost:3000/api/v1/places`, `/products`, `/videos`, `/categories`. Referencia completa en `docs/API.md`.
+Imágenes: se guardan en `UPLOADS_DIR` (por defecto `backend/uploads`, ignorada por Git) y se sirven en `/uploads/...`.
 
 ## Correo y OAuth
 Sin `RESEND_API_KEY` el servidor **no envía** correos y lo avisa en el log (en desarrollo imprime el contenido para poder copiar el código). OAuth: `docs/OAUTH.md`.
