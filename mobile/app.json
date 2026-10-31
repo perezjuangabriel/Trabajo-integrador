@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "SPOTCHECK",
+    "slug": "spotcheck",
+    "version": "1.0.0",
+    "scheme": "spotcheck",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
+    "splash": { "image": "./assets/splash.png", "resizeMode": "contain", "backgroundColor": "#0E0E10" },
+    "android": {
+      "package": "com.spotcheck.app",
+      "versionCode": 1,
+      "adaptiveIcon": { "foregroundImage": "./assets/adaptive-icon.png", "backgroundColor": "#0E0E10" },
+      "softwareKeyboardLayoutMode": "resize",
+      "permissions": ["READ_MEDIA_IMAGES"]
+    },
+    "plugins": [
+      "expo-secure-store",
+      "expo-web-browser",
+      ["expo-image-picker", { "photosPermission": "SPOTCHECK necesita acceder a tus fotos para adjuntarlas a spots, productos y reseñas." }]
+    ],
+    "extra": { "apiUrl": "http://10.0.2.2:3000/api/v1" }
+  }
+}

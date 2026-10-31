@@ -16,9 +16,9 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 - [x] **Etapa 2 — Auth y roles** (COMPLETA, 75/75 pruebas en MySQL 8 y MariaDB): registro, login, refresh con rotación y detección de reuso, bloqueo por intentos, verificación de correo, recuperación y cambio de contraseña, verificación adicional (código -> token 5 min), OAuth Google/GitHub/Discord (implementado; **sin probar contra proveedores reales**), perfil, baja de cuenta con purga, gestión de usuarios/roles/suspensión del admin con auditoría, `npm run create-admin`. Docs: `API.md`, `OAUTH.md`.
 - [x] **Etapa 3 — Catálogo** (COMPLETA, 137/137 pruebas en MySQL 8 y MariaDB): lugares, productos y videos con ABMLC, búsqueda, filtros, orden y paginación; catálogos de apoyo (categorías, marcas, ciudades, superficies, obstáculos, servicios); flujo de moderación (cola, aprobar/rechazar/ocultar/restaurar, historial); "mis propuestas"; subida de imágenes a disco con validación por firma; configuración de moderación editable por el admin. (spots, productos, videos, categorías, marcas) con ABMLC, filtros y paginación
 - [x] **Etapa 4 — Reseñas, favoritos, reportes** (COMPLETA, 179/179 en MySQL 8 y MariaDB): reseñas con promedios transaccionales y bloqueo por entidad (verificado con prueba de mutación), fotos, premoderación, moderación de reseñas, favoritos idempotentes, reportes con resolución, actividad del usuario. (promedios en transacción), favoritos, reportes, moderación, subida de imágenes
-- [ ] Etapa 5 — Destacados (manual/automático, job cada 24 h), panel admin, auditoría, estadísticas
-- [ ] Etapa 6 — App móvil (Expo 58, React Navigation, temas claro/oscuro/sistema, SecureStore)
-- [ ] Etapa 7 — Documentación final, OAuth/EAS/Railway guías, manual de usuario
+- [x] **Etapa 5 — Destacados, panel admin, auditoría, estadísticas** (COMPLETA; ver `FEATURED_ALGORITHM.md`)
+- [x] **Etapa 6 — App móvil** (completa: `tsc` limpio, 16 pruebas del cliente API, bundle Android Hermes OK con `expo export`). NO probada en dispositivo/emulador
+- [x] **Etapa 7 — Documentación**: `USER_MANUAL.md`, `DEPLOY_RAILWAY.md`, `EAS_APK.md`, `OAUTH.md`, README
 
 ## Entorno de pruebas (la sandbox se reinicia; hay que recrearlo)
 - Shell = `/bin/sh` (dash): NO usar expansión de llaves `{a,b}` en mkdir.
@@ -72,3 +72,7 @@ OAuth real (Google/GitHub/Discord) y su prueba; `RESEND_API_KEY` + dominio verif
 - Hallazgo real: `DELETE` sobre una propuesta ajena respondía 403 (revelaba que existía); ahora 404, como al verla.
 - Prueba de mutación: romper la validación de firma de imagen y la visibilidad de pendientes hace fallar las pruebas (confirma que no son vacías).
 - `LIKE '%costa%'` coincide con "Costanera": en pruebas usar valores que no sean subcadena de otros.
+
+
+## Resultado final de pruebas
+Backend: 198/198 en MariaDB 10.11 y en MySQL 8.0.46. Móvil: 16/16. Sin verificar (requieren cuentas/dispositivo del cliente): APK EAS, prueba en teléfono real, OAuth real, Resend real, despliegue Railway, video demo.
