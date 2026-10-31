@@ -32,4 +32,8 @@ Destacados/config: `featured_settings`, `featured_content`, `app_settings`.
 - Imágenes: en la BD solo URL y metadatos; los archivos van al disco del servidor (volumen en Railway).
 
 ## Verificación
-`npm test` en `/backend` (16 pruebas: unicidad de reseña y favorito, CHECK de puntuación y destino, promedios sin reseñas ocultas/pendientes, cascadas, unicidad de identidad OAuth, FKs, full-text). Resultado: **16/16 en MySQL 8.0.46 y 16/16 en MariaDB 10.11.14**. Probado con MariaDB, no con la versión exacta de tu XAMPP.
+`npm test` en `/backend` recrea una base aparte (`spotcheck_test`, con salvaguarda: el nombre debe terminar en `_test` y se ignora `MYSQL_URL`) y ejecuta 75 pruebas distribuidas en 6 archivos (esquema, autenticación, roles y permisos, OAuth, baja de cuenta y adaptadores de proveedor).
+Resultado (Etapa 2): **75/75 en MySQL 8.0.46 y en MariaDB 10.11.14**, y también con el servidor en huso UTC-3 (la app fuerza UTC por conexión). Probado con MariaDB/MySQL reales, no con la versión exacta de tu XAMPP.
+
+## Cambios por etapa
+- Etapa 2: `auth_tokens.purpose` suma `oauth_exchange` y la columna `payload` (challenge PKCE del canje OAuth).

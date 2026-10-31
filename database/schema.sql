@@ -82,13 +82,15 @@ CREATE TABLE refresh_tokens (
   CONSTRAINT fk_refresh_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Tokens/códigos de un solo uso: verificar correo, recuperar contraseña y
--- confirmar operaciones sensibles (código de 6 dígitos con límite de intentos).
+-- Tokens/códigos de un solo uso: verificar correo, recuperar contraseña,
+-- confirmar operaciones sensibles (código de 6 dígitos con límite de intentos) y
+-- canjear el resultado de un login OAuth (con PKCE).
 CREATE TABLE auth_tokens (
   id         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id    BIGINT UNSIGNED NOT NULL,
-  purpose    ENUM('verify_email','reset_password','sensitive_action') NOT NULL,
-  token_hash CHAR(64)        NOT NULL,
+  purpose    ENUM('verify_email','reset_password','sensitive_action','oauth_exchange') NOT NULL,
+  token_hash CHAR(64)        NOT NULL COMMENT 'HMAC-SHA256 del código/token, nunca el valor en claro',
+  payload    VARCHAR(255)    NULL COMMENT 'oauth_exchange: code_challenge PKCE',
   attempts   TINYINT UNSIGNED NOT NULL DEFAULT 0,
   expires_at DATETIME        NOT NULL,
   used_at    DATETIME        NULL,

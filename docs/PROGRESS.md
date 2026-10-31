@@ -13,8 +13,8 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 
 ## Estado
 - [x] **Etapa 1 — Cimientos** (COMPLETA y probada): estructura del repo, `database/schema.sql` (30 tablas), `seed.sql`, `backend/src/config/{env,db}.js`, `scripts/db-setup.js`, `tests/schema.test.js`, `docs/DATABASE.md`.
-- [ ] Etapa 2 — Auth y roles  ← **SIGUIENTE**
-- [ ] Etapa 3 — Catálogo (spots, productos, videos, categorías, marcas) con ABMLC, filtros y paginación
+- [x] **Etapa 2 — Auth y roles** (COMPLETA, 75/75 pruebas en MySQL 8 y MariaDB): registro, login, refresh con rotación y detección de reuso, bloqueo por intentos, verificación de correo, recuperación y cambio de contraseña, verificación adicional (código -> token 5 min), OAuth Google/GitHub/Discord (implementado; **sin probar contra proveedores reales**), perfil, baja de cuenta con purga, gestión de usuarios/roles/suspensión del admin con auditoría, `npm run create-admin`. Docs: `API.md`, `OAUTH.md`.
+- [ ] Etapa 3 — Catálogo  ← **SIGUIENTE** (spots, productos, videos, categorías, marcas) con ABMLC, filtros y paginación
 - [ ] Etapa 4 — Reseñas (promedios en transacción), favoritos, reportes, moderación, subida de imágenes
 - [ ] Etapa 5 — Destacados (manual/automático, job cada 24 h), panel admin, auditoría, estadísticas
 - [ ] Etapa 6 — App móvil (Expo 58, React Navigation, temas claro/oscuro/sistema, SecureStore)
@@ -26,7 +26,7 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 - MySQL 8.0.46 en `:3307`: `.deb` extraídos en `/opt/mysql8` con `dpkg -x`, datadir `/tmp/m8data`, `--secure-file-priv=NULL`. Probar con `DB_PORT=3307 npm test`.
 - `backend/.env` (no versionado) usa root sin contraseña y un `JWT_ACCESS_SECRET` de desarrollo.
 
-## Diseño acordado para la Etapa 2 (a implementar)
+## Diseño de la Etapa 2 (IMPLEMENTADO; se conserva como referencia)
 - Access JWT 15 min; refresh token aleatorio, guardado como SHA-256 en `refresh_tokens`, **rota en cada uso**; si se reutiliza uno ya rotado se revoca toda la `family_id`.
 - Códigos/tokens de un solo uso en `auth_tokens` (verificar correo, reset, `sensitive_action` con código de 6 dígitos y máx. de intentos). Envío con Resend.
 - Bloqueo por intentos fallidos (`failed_login_count`, `locked_until`) + `express-rate-limit`.
@@ -36,3 +36,26 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 
 ## Pendientes que dependen del cliente (no verificables desde la sandbox)
 APK con EAS Build (cuenta Expo), prueba en Android real, credenciales OAuth (Google/GitHub/Discord), API key de Resend y dominio, despliegue en Railway (+ volumen para `uploads`), video de demostración.
+
+## Estructura del backend (Etapa 2)
+`src/`: `app.js` (fábrica, para supertest) · `server.js` · `config/{env,db}.js` · `middleware/{authenticate,validate,errorHandler,rateLimit}.js` (`authenticate`, `optionalAuthenticate`, `requireRole(...)`, `requireVerifiedEmail`, `requireSensitiveVerification`) · `routes/` · `controllers/` · `services/` (auth, oauth, oauthProviders, token, oneTimeCode, mail, accountDeletion, adminUser) · `repositories/` (todo el SQL; incluye `ratings.repo.js` con `recompute(kind,id,conn)` que la Etapa 4 debe reutilizar al crear/editar/borrar/ocultar reseñas) · `validators/` (zod) · `jobs/` (cron: purga de cuentas 03:15 UTC y de tokens 03:30 UTC) · `utils/`. `scripts/`: `db-setup`, `setup-lib`, `create-admin`. `tests/`: schema, auth, roles, oauth, oauthProviders, deletion.
+
+## Convenciones a respetar en las próximas etapas
+- Respuestas `{data}` / `{error:{code,message,details}}`; errores de negocio con `AppError`; validación con `validate({body,query,params})` y datos en `req.valid`.
+- Express 5: los handlers `async` propagan errores solos (no hace falta try/catch ni `asyncHandler`).
+- Consultas SIEMPRE con `?` (mysql2 `query` con parámetros); rutas por módulo: routes -> controller -> service -> repository.
+- Rol y estado se leen de la BD en cada request (suspensión y cambio de rol son inmediatos).
+- Publicar contenido debe exigir `requireVerifiedEmail`. Los moderadores usan `requireRole('moderator','admin')`.
+- Al borrar/ocultar reseñas: recalcular con `ratings.recompute` en la MISMA transacción. Borrar archivos de fotos con `utils/storage.deleteStoredFiles` DESPUÉS del commit.
+- Tests: usan `tests/helpers.js` (app con límites altos, `outbox` de correos, `registerUser`, `getSensitiveToken`). No dependen de datos mutables de la semilla salvo usuarios 1–6 y lugares 1–9.
+
+## Cómo correr todo (sandbox)
+`/home/claude/startdb.sh` levanta MariaDB (:3306) y MySQL 8 (:3307) (se apagan entre turnos; recrear el script con los pasos de "Entorno de pruebas" si se perdió). `npm test` (MariaDB) y `DB_PORT=3307 npm test` (MySQL 8).
+
+## Lecciones de la Etapa 2 (bugs reales encontrados)
+- MySQL evalúa las asignaciones de un `UPDATE` de izquierda a derecha: `locked_until` debe ir antes de `failed_login_count`.
+- Sin forzar `SET time_zone='+00:00'` por conexión, un servidor en UTC-3 rompe los vencimientos (verificado con contraprueba).
+- `new URL('spotcheck://x').origin` es `'null'`: comparar con `href`.
+
+## Pendientes de cliente acumulados
+OAuth real (Google/GitHub/Discord) y su prueba; `RESEND_API_KEY` + dominio verificado (sin dominio, Resend solo entrega a tu propio correo); resto igual que arriba.
