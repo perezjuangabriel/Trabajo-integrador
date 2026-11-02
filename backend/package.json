@@ -31,6 +31,7 @@
     "mysql2": "^3.24.6",
     "node-cron": "^4.6.0",
     "resend": "^6.37.0",
+    "spotcheck": "file:..",
     "zod": "^4.6.7"
   },
   "devDependencies": {

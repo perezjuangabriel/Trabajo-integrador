@@ -16,7 +16,8 @@ export async function setupDatabase({ seed = false } = {}) {
     await admin.end();
   }
   const { uri, ...rest } = buildConnectionConfig();
-  const conn = await mysql.createConnection(uri ? { uri, multipleStatements: true } : { ...rest, multipleStatements: true });
+  // Con URL también hay que pasar el resto de las opciones (SSL de bases en la nube); antes se descartaban.
+  const conn = await mysql.createConnection({ ...(uri ? { uri } : {}), ...rest, multipleStatements: true });
   try {
     await conn.query(await readFile(path.join(dbDir, 'schema.sql'), 'utf8'));
     if (seed) await conn.query(await readFile(path.join(dbDir, 'seed.sql'), 'utf8'));
