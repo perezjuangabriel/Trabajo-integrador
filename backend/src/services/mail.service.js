@@ -5,7 +5,24 @@ import { env } from '../config/env.js';
 let transport = null;
 export const setMailTransport = (t) => { transport = t; };
 
+// Brevo (HTTP API, sin dependencias): permite enviar a cualquier destinatario con un remitente verificado.
+async function brevoTransport({ to, subject, html, text }) {
+  const m = /^(.*)<(.+)>$/.exec(env.MAIL_FROM.trim());
+  const sender = m ? { name: m[1].trim().replace(/^"|"$/g, ''), email: m[2].trim() } : { email: env.MAIL_FROM.trim() };
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
+    body: JSON.stringify({ sender, to: [{ email: to }], subject, htmlContent: html, textContent: text }),
+  });
+  if (!res.ok) {
+    console.error('[mail] Brevo devolvió un error:', res.status, await res.text().catch(() => ''));
+    return { sent: false };
+  }
+  return { sent: true };
+}
+
 async function resendTransport({ to, subject, html, text }) {
+  if (env.BREVO_API_KEY) return brevoTransport({ to, subject, html, text });
   if (!env.RESEND_API_KEY) {
     // Sin API key NO se simula un envío exitoso: se avisa claramente en el log del servidor.
     console.warn(`[mail] RESEND_API_KEY no configurada. Correo NO enviado a ${to}: "${subject}"`);

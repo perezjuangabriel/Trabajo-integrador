@@ -31,6 +31,7 @@ const schema = z
     BCRYPT_COST: z.coerce.number().min(4).max(15).default(12),
 
     RESEND_API_KEY: z.string().optional(),
+    BREVO_API_KEY: z.string().optional(),
     MAIL_FROM: z.string().default('SPOTCHECK <onboarding@resend.dev>'),
 
     UPLOADS_DIR: z.string().default('./uploads'),
@@ -47,7 +48,7 @@ const schema = z
     DISCORD_CLIENT_SECRET: z.string().optional(),
   })
   .superRefine((v, ctx) => {
-    if (v.NODE_ENV === 'production' && !v.RESEND_API_KEY) {
+    if (v.NODE_ENV === 'production' && !v.RESEND_API_KEY && !v.BREVO_API_KEY) {
       ctx.addIssue({ code: 'custom', path: ['RESEND_API_KEY'], message: 'Obligatoria en producción' });
     }
   });
