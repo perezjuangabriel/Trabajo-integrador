@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { Banner, Body, Button, Input, Muted, Row, Screen, Select, Stars, Title, showError } from '../components/ui';
+import { Banner, Body, Button, Input, Muted, Row, Screen, Select, Stars, Title, messageOf, showError } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { reviewsApi, socialApi } from '../api/services';
 import { RootStackParamList, useNav } from '../navigation/types';
@@ -23,9 +23,9 @@ export function ReviewFormScreen() {
     setBusy(true);
     try {
       const saved = review ? (await reviewsApi.update(review, { rating, comment: comment.trim() })).review : (await reviewsApi.create(kind, id, { rating, comment: comment.trim() })).review;
-      let failed = 0;
-      if (canPhotos) for (const p of photos.slice(0, Math.max(0, 4 - (review?.images.length ?? 0)))) await reviewsApi.uploadImage(saved.id, p).catch(() => { failed++; });
-      if (failed) showError(new Error(`No se pudieron subir ${failed} foto(s).`), 'Reseña guardada');
+      let failed = 0; let why = '';
+      if (canPhotos) for (const p of photos.slice(0, Math.max(0, 4 - (review?.images.length ?? 0)))) await reviewsApi.uploadImage(saved.id, p).catch((e) => { failed++; why = messageOf(e); });
+      if (failed) showError(new Error(`No se pudieron subir ${failed} foto(s)${why ? `: ${why}` : ''}.`), 'Reseña guardada');
       if (saved.status === 'pending') showError(new Error('Tu reseña será visible cuando el equipo de moderación la apruebe.'), 'Pendiente de revisión');
       nav.goBack();
     } catch (e) { showError(e, 'No pudimos guardar tu reseña'); } finally { setBusy(false); }

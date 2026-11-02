@@ -13,9 +13,11 @@ export function createApp({ limiterOptions, webDir = env.WEB_DIR } = {}) {
   const app = express();
   app.set('trust proxy', env.TRUST_PROXY); // IP real del cliente detrás del proxy de Render
   app.disable('x-powered-by');
+  // Una línea por respuesta de error (4xx/5xx) en los logs de Render: sin esto no se ve por qué falla una petición.
+  if (env.NODE_ENV !== 'test') app.use((req, res, next) => { res.on('finish', () => { if (res.statusCode >= 400 && req.path.startsWith('/api/')) console.log(`[http] ${res.statusCode} ${req.method} ${req.path}`); }); next(); });
   // CSP pensada para servir la web exportada de Expo (scripts propios; imágenes https de miniaturas de video).
   // COOP desactivado a propósito: con `same-origin` el navegador corta el vínculo con la ventana de login social (popup) y la web no puede completar el inicio de sesión.
-  app.use(helmet({ crossOriginOpenerPolicy: false, contentSecurityPolicy: { directives: { 'default-src': ["'self'"], 'img-src': ["'self'", 'data:', 'blob:', 'https:'], 'style-src': ["'self'", "'unsafe-inline'"], 'script-src': ["'self'"], 'font-src': ["'self'", 'data:'], 'connect-src': ["'self'"], 'object-src': ["'none'"], 'frame-ancestors': ["'self'"] } } }));
+  app.use(helmet({ crossOriginOpenerPolicy: false, contentSecurityPolicy: { directives: { 'default-src': ["'self'"], 'img-src': ["'self'", 'data:', 'blob:', 'https:'], 'connect-src': ["'self'", 'data:', 'blob:'], 'style-src': ["'self'", "'unsafe-inline'"], 'script-src': ["'self'"], 'font-src': ["'self'", 'data:'],  'object-src': ["'none'"], 'frame-ancestors': ["'self'"] } } }));
   // La app móvil no usa CORS; solo se habilita para los orígenes configurados (p. ej. un panel web).
   app.use(cors({ origin: env.CORS_ORIGINS.length ? env.CORS_ORIGINS : false }));
   app.use(express.json({ limit: '100kb' }));

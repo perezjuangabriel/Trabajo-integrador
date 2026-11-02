@@ -47,7 +47,7 @@ export function createApiClient(cfg: {
     if (opts.form) body = opts.form; // multipart: el Content-Type (con boundary) lo pone fetch
     else if (opts.body !== undefined) { headers['Content-Type'] = 'application/json'; body = JSON.stringify(opts.body); }
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+    const timer = setTimeout(() => ctrl.abort(), opts.form ? Math.max(timeoutMs, 60_000) : timeoutMs); // subir un archivo desde datos móviles tarda más
     try {
       return await doFetch(`${cfg.baseUrl}${path}${buildQuery(opts.query)}`, { method, headers, body, signal: ctrl.signal });
     } catch (e) {

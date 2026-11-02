@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { Image } from 'expo-image';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { Banner, Button, Chip, ErrorView, Input, Loading, Muted, Row, Screen, Select, SectionTitle, Title, showError } from '../components/ui';
+import { Banner, Button, Chip, ErrorView, Input, Loading, Muted, Row, Screen, Select, SectionTitle, Title, messageOf, showError } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 import { catalogApi } from '../api/services';
 import { useAsync } from '../hooks';
@@ -68,11 +68,9 @@ export function FormScreen() {
 
   useEffect(() => { // precarga al editar
     const d = existing.data as (PlaceDetail & ProductDetail & VideoDetail) | null; if (!d) return;
-    if (kind === 'place') set({
-      name: d.name, description: d.description ?? '', categoryId: d.category.id, extraCats: d.extraCategories.map((x) => x.id), cityId: d.city.id, zone: d.zone ?? '', address: d.address ?? '',
+    if (kind === 'place') set({ name: d.name, description: d.description ?? '', categoryId: d.category.id, extraCats: d.extraCategories.map((x) => x.id), cityId: d.city.id, zone: d.zone ?? '', address: d.address ?? '',
       lat: d.latitude != null ? String(d.latitude) : '', lng: d.longitude != null ? String(d.longitude) : '', surfaceId: d.surfaceType?.id ?? null, obstacles: d.obstacles.map((x) => x.id), amenities: d.amenities.map((x) => x.id),
-      days: d.hours.map((h) => h.weekday), opens: d.hours[0]?.opensAt ?? '10:00', closes: d.hours[0]?.closesAt ?? '20:00'
-    });
+      days: d.hours.map((h) => h.weekday), opens: d.hours[0]?.opensAt ?? '10:00', closes: d.hours[0]?.closesAt ?? '20:00' });
     if (kind === 'product') set({ name: d.name, description: d.description ?? '', categoryId: d.category.id, brandId: d.brand.id, price: d.price ? String(d.price.amount) : '', currency: d.price?.currency ?? 'ARS', specs: d.specs });
     if (kind === 'video') set({ name: d.title, description: d.description ?? '', categoryId: d.category.id, url: d.url });
     if (kind !== 'video') setImgs(d.images);
@@ -98,21 +96,19 @@ export function FormScreen() {
       const desc = f.description.trim() || null;
       let body: Record<string, unknown>;
       if (kind === 'place') {
-        body = {
-          name: f.name.trim(), description: desc, categoryId: f.categoryId, categoryIds: f.extraCats.filter((x) => x !== f.categoryId), zone: f.zone.trim() || null, address: f.address.trim() || null,
+        body = { name: f.name.trim(), description: desc, categoryId: f.categoryId, categoryIds: f.extraCats.filter((x) => x !== f.categoryId), zone: f.zone.trim() || null, address: f.address.trim() || null,
           latitude: f.lat === '' ? null : toNumber(f.lat), longitude: f.lng === '' ? null : toNumber(f.lng), surfaceTypeId: f.surfaceId, obstacleIds: f.obstacles, amenityIds: f.amenities,
           hours: f.days.map((d) => ({ weekday: d, opensAt: f.opens, closesAt: f.closes })),
-          ...(f.newCity ? { newCity: { name: f.cityName.trim(), ...(f.cityRegion.trim() ? { region: f.cityRegion.trim() } : {}) } } : { cityId: f.cityId })
-        };
+          ...(f.newCity ? { newCity: { name: f.cityName.trim(), ...(f.cityRegion.trim() ? { region: f.cityRegion.trim() } : {}) } } : { cityId: f.cityId }) };
       } else if (kind === 'product') {
         body = { name: f.name.trim(), description: desc, brandId: f.brandId, categoryId: f.categoryId, price: f.price === '' ? null : { amount: toNumber(f.price), currency: f.currency.trim().toUpperCase() }, specs: f.specs.filter((s) => s.key.trim() && s.value.trim()) };
       } else body = { title: f.name.trim(), description: desc, url: f.url.trim(), categoryId: f.categoryId };
 
       const saved = edit ? await catalogApi.update(kind, id!, body) : await catalogApi.create(kind, body);
-      let failed = 0;
-      for (const r of removed) await catalogApi.deleteImage(kind, saved.id, r.id).catch(() => { failed++; });
-      for (const img of added) await catalogApi.uploadImage(kind, saved.id, img).catch(() => { failed++; });
-      const note = failed ? `\n\nNo se pudieron procesar ${failed} foto(s). Podés agregarlas editando.` : '';
+      let failed = 0; let why = '';
+      for (const r of removed) await catalogApi.deleteImage(kind, saved.id, r.id).catch((e) => { failed++; why = messageOf(e); });
+      for (const img of added) await catalogApi.uploadImage(kind, saved.id, img).catch((e) => { failed++; why = messageOf(e); });
+      const note = failed ? `\n\nNo se pudieron procesar ${failed} foto(s)${why ? `: ${why}` : ''}. Podés agregarlas editando.` : '';
       if (!edit && !isStaff) showError(new Error(`Tu propuesta quedó pendiente de revisión. Te mostramos su estado en "Mis propuestas".${note}`), '¡Gracias!');
       else if (note) showError(new Error(note.trim()), 'Guardado con avisos');
       nav.replace('Detail', { kind, id: saved.id });

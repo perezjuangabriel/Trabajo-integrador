@@ -19,6 +19,11 @@ describe('versión web servida por el backend', () => {
     expect((await request(app).get('/uploads/nada.png')).status).toBe(404);
   });
 
+  it('no envía Cross-Origin-Opener-Policy (rompería el login social en popup de la web)', async () => {
+    const res = await request(app).get('/');
+    expect(res.headers['cross-origin-opener-policy']).toBeUndefined();
+  });
+
   it('sin carpeta web no sirve nada en /', async () => {
     const res = await request(createApp({ webDir: path.join(dir, 'no-existe') })).get('/');
     expect(res.status).toBe(404);
@@ -26,6 +31,7 @@ describe('versión web servida por el backend', () => {
 
   it('la política de seguridad permite imágenes https pero no scripts ajenos', async () => {
     const csp = (await request(app).get('/')).headers['content-security-policy'];
+    expect(csp).toMatch(/connect-src 'self' data: blob:/); // la web lee la foto elegida con fetch(data:/blob:)
     expect(csp).toContain("script-src 'self'");
     expect(csp).toContain('img-src');
   });

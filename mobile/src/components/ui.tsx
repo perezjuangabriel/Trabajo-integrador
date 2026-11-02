@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, type ImageStyle, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, type ImageStyle, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useTheme } from '../theme/ThemeContext';
@@ -9,9 +9,15 @@ import { ApiError } from '../api/client';
 type Styles = { [key: string]: ViewStyle | TextStyle | ImageStyle };
 export const useStyles = <T extends Styles>(make: (c: Palette) => T): T => { const { colors } = useTheme(); return useMemo(() => StyleSheet.create(make(colors)), [colors]); };
 export const messageOf = (e: unknown) => (e instanceof ApiError ? e.details?.[0]?.message ?? e.message : e instanceof Error ? e.message : 'Ocurrió un error inesperado');
-export const showError = (e: unknown, title = 'No se pudo completar') => { if (!(e instanceof ApiError && e.code === 'CANCELLED')) Alert.alert(title, messageOf(e)); };
-export const confirm = (title: string, message: string, onOk: () => void, okText = 'Confirmar') =>
+// En web, Alert.alert de react-native-web no hace nada (ni avisos ni confirmaciones): se usan los diálogos del navegador.
+export const showError = (e: unknown, title = 'No se pudo completar') => {
+  if (e instanceof ApiError && e.code === 'CANCELLED') return;
+  if (Platform.OS === 'web') window.alert(`${title}\n\n${messageOf(e)}`); else Alert.alert(title, messageOf(e));
+};
+export const confirm = (title: string, message: string, onOk: () => void, okText = 'Confirmar') => {
+  if (Platform.OS === 'web') { if (window.confirm(`${title}\n\n${message}`)) onOk(); return; }
   Alert.alert(title, message, [{ text: 'Cancelar', style: 'cancel' }, { text: okText, style: 'destructive', onPress: onOk }]);
+};
 export const fmtDate = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 /** Ancho máximo del contenido: en pantallas grandes (web) no se estira de borde a borde. */
 export const MAX_WIDTH = 820;

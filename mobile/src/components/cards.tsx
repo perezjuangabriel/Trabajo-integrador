@@ -10,10 +10,11 @@ const isVideo = (c: AnyCard): c is VideoCard => 'title' in c;
 export const cardTitle = (c: AnyCard) => (isVideo(c) ? c.title : c.name);
 const KIND_LABEL: Record<Kind, string> = { place: 'Spot', product: 'Producto', video: 'Video' };
 
+// Defensivo: al cambiar de pestaña (Mis propuestas, Favoritos…) la lista conserva un instante los elementos del tipo anterior.
 function subtitle(kind: Kind, item: AnyCard) {
-  if (kind === 'place') { const p = item as PlaceCard; return `${p.city.name}${p.zone ? ` · ${p.zone}` : ''}`; }
-  if (kind === 'product') return (item as ProductCard).brand.name;
-  const v = item as VideoCard; return v.provider === 'other' ? 'Enlace externo' : v.provider;
+  if (kind === 'place') { const p = item as PlaceCard; return `${p.city?.name ?? ''}${p.zone ? ` · ${p.zone}` : ''}`; }
+  if (kind === 'product') return (item as ProductCard).brand?.name ?? '';
+  const v = item as VideoCard; return v.provider === 'other' ? 'Enlace externo' : v.provider ?? '';
 }
 const imageOf = (item: AnyCard) => (isVideo(item) ? item.thumbnailUrl : (item as PlaceCard | ProductCard).coverUrl);
 
@@ -37,7 +38,7 @@ export function ContentCard({ kind, item, onPress, showStatus, wide, badge }: { 
         {uri ? <Image source={{ uri }} style={s.img} contentFit="cover" transition={200} accessibilityLabel={cardTitle(item)} />
           : <View style={[s.img, { alignItems: 'center', justifyContent: 'center' }]}><Title size={16}>{KIND_LABEL[kind]}</Title></View>}
         <View style={{ position: 'absolute', left: 10, top: 10, flexDirection: 'row', gap: 6 }}>
-          <Badge text={item.category.name} />{badge ? <Badge text={badge} solid /> : null}
+          <Badge text={item.category?.name ?? KIND_LABEL[kind]} />{badge ? <Badge text={badge} solid /> : null}
         </View>
         {kind === 'video' ? <View style={{ position: 'absolute', right: 12, bottom: 12 }}><PlayButton size={44} /></View> : null}
       </View>
@@ -63,7 +64,7 @@ export function HeroCard({ kind, item, label, onPress }: { kind: Kind; item: Any
       {uri ? <Image source={{ uri }} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" transition={250} /> : null}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '75%', backgroundColor: 'rgba(0,0,0,0.28)' }} />
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%', backgroundColor: 'rgba(0,0,0,0.5)' }} />
-      <View style={{ position: 'absolute', left: 14, top: 14, flexDirection: 'row', gap: 6 }}><Badge text={label} solid /><Badge text={item.category.name} /></View>
+      <View style={{ position: 'absolute', left: 14, top: 14, flexDirection: 'row', gap: 6 }}><Badge text={label} solid /><Badge text={item.category?.name ?? KIND_LABEL[kind]} /></View>
       {kind === 'video' ? <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, alignItems: 'center', justifyContent: 'center' }}><PlayButton size={68} /></View> : null}
       <View style={{ position: 'absolute', left: 16, right: 16, bottom: 16, gap: 4 }}>
         <Text numberOfLines={2} style={{ color: '#FFFFFF', fontSize: 26, fontWeight: '900', letterSpacing: -0.5 }}>{cardTitle(item)}</Text>
