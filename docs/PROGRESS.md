@@ -75,4 +75,4 @@ OAuth real (Google/GitHub/Discord) y su prueba; `RESEND_API_KEY` + dominio verif
 
 
 ## Resultado final de pruebas
-Backend: 198/201 en MariaDB 10.11 y en MySQL 8.0.46. Móvil: 16/16. Sin verificar (requieren cuentas/dispositivo del cliente): APK EAS, prueba en teléfono real, OAuth real, Resend real, despliegue Railway, video demo.
+Backend: 201/201 en MariaDB 10.11 y en MySQL 8.0.46. Móvil: 16/16. Sin verificar (requieren cuentas/dispositivo del cliente): APK EAS, prueba en teléfono real, OAuth real, Resend real, despliegue Railway, video demo.
