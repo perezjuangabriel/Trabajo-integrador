@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { Banner, Body, Button, Input, Muted, Row, Screen, Title, showError, messageOf } from '../components/ui';
+import { Banner, Body, Button, Input, Muted, Row, Screen, Title, showError, messageOf, notify } from '../components/ui';
 import { useAuth, type Provider } from '../context/AuthContext';
 import { authApi } from '../api/services';
 import { isCode, isEmail, passwordProblem } from '../lib/validate';
@@ -75,7 +75,7 @@ export function VerifyEmailScreen() {
   const verify = async () => {
     if (!isCode(code)) return showError(new Error('El código tiene 6 dígitos'), 'Código inválido');
     setBusy(true);
-    try { await authApi.verifyEmail(user.email, code.trim()); await refreshUser(); nav.goBack(); } catch (e) { showError(e, 'No pudimos verificar'); } finally { setBusy(false); }
+    try { await authApi.verifyEmail(user.email, code.trim()); await refreshUser(); notify('Correo verificado', 'Ya podés proponer contenido y escribir reseñas.', () => nav.navigate('Main')); } catch (e) { showError(e, 'No pudimos verificar'); } finally { setBusy(false); }
   };
   const resend = async () => { try { const r = await authApi.resendVerification(); setSent(r.emailSent ? 'Te enviamos un código nuevo.' : 'El servidor no pudo enviar el correo. Probá más tarde.'); } catch (e) { showError(e); } };
   return (

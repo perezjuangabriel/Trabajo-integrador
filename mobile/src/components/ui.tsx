@@ -14,6 +14,8 @@ type DialogReq = { title: string; message: string; buttons: { text: string; dest
 let dialogListener: ((d: DialogReq) => void) | null = null;
 const dialogBacklog: DialogReq[] = [];
 const pushDialog = (d: DialogReq) => (dialogListener ? dialogListener(d) : dialogBacklog.push(d));
+export const notify = (title: string, message: string, onOk?: () => void) =>
+  pushDialog({ title, message, buttons: [{ text: 'Aceptar', onPress: onOk }] });
 export const showError = (e: unknown, title = 'No se pudo completar') => {
   if (e instanceof ApiError && e.code === 'CANCELLED') return;
   pushDialog({ title, message: messageOf(e), buttons: [{ text: 'Aceptar' }] });
