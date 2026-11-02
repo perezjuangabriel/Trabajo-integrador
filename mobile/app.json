@@ -22,7 +22,8 @@
       },
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [
-        "READ_MEDIA_IMAGES"
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
@@ -37,6 +38,12 @@
     ],
     "web": {
       "bundler": "metro"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "518006b7-9533-4c63-86f0-63fe366eedb3"
+      }
+    },
+    "owner": "juangabriel08"
   }
 }
