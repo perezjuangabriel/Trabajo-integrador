@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Linking, ScrollView, View, useWindowDimensions } from 'react-native';
+import { Linking, Platform, ScrollView, View, useWindowDimensions } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Image } from 'expo-image';
 import { RouteProp, useRoute } from '@react-navigation/native';
@@ -91,7 +91,7 @@ function VideoPlayer({ video, width }: { video: VideoDetail; width: number }) {
   const h = Math.round((width * 9) / 16);
   return (
     <View>
-      {video.embedUrl && !failed ? (
+      {video.embedUrl && !failed && Platform.OS !== 'web' ? ( // WebView no existe en web: ahí se muestra la miniatura y el enlace
         <View style={{ width, height: h, backgroundColor: '#000' }}>
           <WebView source={{ uri: video.embedUrl }} allowsFullscreenVideo javaScriptEnabled originWhitelist={['https://*']} mediaPlaybackRequiresUserAction
             onShouldStartLoadWithRequest={(r) => r.url.startsWith(video.embedUrl!.split('?')[0]) || r.url === 'about:blank'} // evita navegar fuera del reproductor

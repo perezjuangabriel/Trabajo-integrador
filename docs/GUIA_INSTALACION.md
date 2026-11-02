@@ -132,6 +132,18 @@ Otros scripts: `npm run typecheck` (TypeScript) y `npm test` (16 pruebas del cli
 
 > **Limitación de Expo Go:** el inicio de sesión con Google/GitHub/Discord necesita el esquema propio `spotcheck://`, que solo existe en un build propio (APK o development build). Con Expo Go probá correo y contraseña. Detalle en `OAUTH.md`.
 
+### 4.4 Ejecutar en el navegador (versión web)
+Sirve para probar rápido desde la PC, sin teléfono. Está pensada para **desarrollo y demostración**, no como producción.
+1. En `backend/.env` poné `CORS_ORIGINS=http://localhost:8081` y reiniciá el backend (sin esto el navegador bloquea las llamadas a la API).
+2. En otra terminal:
+   ```bash
+   cd mobile
+   npm install
+   npm run web          # abre http://localhost:8081
+   ```
+   La app usa por defecto `http://localhost:3000/api/v1`.
+3. Limitaciones en la web: la sesión se guarda en `localStorage` (no existe el almacén seguro del teléfono); los videos no se reproducen dentro de la app (se muestra la miniatura y el enlace al sitio original); el login con Google/GitHub/Discord no está verificado en web.
+
 ## 5. Generar el APK con EAS
 Requiere: cuenta en expo.dev y un backend accesible por internet con HTTPS (ver `DEPLOY_RAILWAY.md`); un APK de release no puede hablar con `http://` plano.
 
