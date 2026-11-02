@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, Platform, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, type ImageStyle, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, TextInput, View, type ImageStyle, type StyleProp, type TextInputProps, type TextStyle, type ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { useTheme } from '../theme/ThemeContext';
@@ -9,15 +9,46 @@ import { ApiError } from '../api/client';
 type Styles = { [key: string]: ViewStyle | TextStyle | ImageStyle };
 export const useStyles = <T extends Styles>(make: (c: Palette) => T): T => { const { colors } = useTheme(); return useMemo(() => StyleSheet.create(make(colors)), [colors]); };
 export const messageOf = (e: unknown) => (e instanceof ApiError ? e.details?.[0]?.message ?? e.message : e instanceof Error ? e.message : 'Ocurrió un error inesperado');
-// En web, Alert.alert de react-native-web no hace nada (ni avisos ni confirmaciones): se usan los diálogos del navegador.
+// Diálogos propios (no los del navegador ni Alert.alert, que en web no existe): showError/confirm encolan y <DialogHost /> los muestra.
+type DialogReq = { title: string; message: string; buttons: { text: string; destructive?: boolean; onPress?: () => void }[] };
+let dialogListener: ((d: DialogReq) => void) | null = null;
+const dialogBacklog: DialogReq[] = [];
+const pushDialog = (d: DialogReq) => (dialogListener ? dialogListener(d) : dialogBacklog.push(d));
 export const showError = (e: unknown, title = 'No se pudo completar') => {
   if (e instanceof ApiError && e.code === 'CANCELLED') return;
-  if (Platform.OS === 'web') window.alert(`${title}\n\n${messageOf(e)}`); else Alert.alert(title, messageOf(e));
+  pushDialog({ title, message: messageOf(e), buttons: [{ text: 'Aceptar' }] });
 };
-export const confirm = (title: string, message: string, onOk: () => void, okText = 'Confirmar') => {
-  if (Platform.OS === 'web') { if (window.confirm(`${title}\n\n${message}`)) onOk(); return; }
-  Alert.alert(title, message, [{ text: 'Cancelar', style: 'cancel' }, { text: okText, style: 'destructive', onPress: onOk }]);
-};
+export const confirm = (title: string, message: string, onOk: () => void, okText = 'Confirmar') =>
+  pushDialog({ title, message, buttons: [{ text: 'Cancelar' }, { text: okText, destructive: true, onPress: onOk }] });
+/** Se monta una sola vez en la raíz de la app. Si llegan varios avisos seguidos, se muestran de a uno. */
+export function DialogHost() {
+  const { colors: c } = useTheme();
+  const [queue, setQueue] = useState<DialogReq[]>([]);
+  useEffect(() => {
+    dialogListener = (d) => setQueue((q) => [...q, d]);
+    if (dialogBacklog.length) setQueue(dialogBacklog.splice(0));
+    return () => { dialogListener = null; };
+  }, []);
+  const d = queue[0];
+  const close = (onPress?: () => void) => { setQueue((q) => q.slice(1)); onPress?.(); };
+  return (
+    <Modal visible={!!d} transparent animationType="fade" onRequestClose={() => close()}>
+      <View style={{ flex: 1, backgroundColor: c.overlay, justifyContent: 'center', alignItems: 'center', padding: space.xl }} accessibilityViewIsModal>
+        <View style={{ width: '100%', maxWidth: 420, backgroundColor: c.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md, borderWidth: 1, borderColor: c.border }}>
+          <Text accessibilityRole="header" style={{ color: c.text, fontSize: 18, fontWeight: '800' }}>{d?.title ?? ''}</Text>
+          <Text style={{ color: c.muted, fontSize: 15, lineHeight: 21 }}>{d?.message ?? ''}</Text>
+          <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+            {(d?.buttons ?? []).map((b, i, all) => (
+              <View key={b.text} style={{ flex: all.length > 1 ? 1 : undefined, minWidth: 120 }}>
+                <Button title={b.text} variant={b.destructive ? 'danger' : all.length > 1 ? 'secondary' : 'primary'} small onPress={() => close(b.onPress)} />
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
 export const fmtDate = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
 /** Ancho máximo del contenido: en pantallas grandes (web) no se estira de borde a borde. */
 export const MAX_WIDTH = 820;
