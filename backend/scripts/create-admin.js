@@ -7,6 +7,9 @@ import { hashPassword } from '../src/utils/password.js';
 import { newPassword, email as emailSchema } from '../src/validators/common.js';
 
 const name = process.env.ADMIN_NAME || 'Administrador';
+// Para armar cuentas de demostración con el correo ya verificado: ADMIN_ROLE=moderator | user (por defecto admin).
+const role = process.env.ADMIN_ROLE || 'admin';
+if (!['admin', 'moderator', 'user'].includes(role)) { console.error('✖ ADMIN_ROLE debe ser admin, moderator o user'); process.exit(1); }
 
 try {
   const parsedEmail = emailSchema.safeParse(process.env.ADMIN_EMAIL ?? '');
@@ -17,12 +20,12 @@ try {
   const password = parsedPass.data;
   let user = await users.findByEmail(email);
   if (user) {
-    await pool.query("UPDATE users SET role = 'admin', status = 'active', password_hash = ?, email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?", [await hashPassword(password), user.id]);
-    console.log(`✔ Usuario existente promovido a admin: ${email}`);
+    await pool.query("UPDATE users SET role = ?, status = 'active', password_hash = ?, email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?", [role, await hashPassword(password), user.id]);
+    console.log(`✔ Usuario existente actualizado a ${role}: ${email}`);
   } else {
     user = await users.create({ email, passwordHash: await hashPassword(password), displayName: name, emailVerified: true });
-    await pool.query("UPDATE users SET role = 'admin' WHERE id = ?", [user.id]);
-    console.log(`✔ Administrador creado: ${email}`);
+    await pool.query("UPDATE users SET role = ? WHERE id = ?", [role, user.id]);
+    console.log(`✔ Cuenta creada (${role}): ${email}`);
   }
 } catch (err) {
   console.error('✖ Error:', err.message);

@@ -13,6 +13,8 @@ export const showError = (e: unknown, title = 'No se pudo completar') => { if (!
 export const confirm = (title: string, message: string, onOk: () => void, okText = 'Confirmar') =>
   Alert.alert(title, message, [{ text: 'Cancelar', style: 'cancel' }, { text: okText, style: 'destructive', onPress: onOk }]);
 export const fmtDate = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—');
+/** Ancho máximo del contenido: en pantallas grandes (web) no se estira de borde a borde. */
+export const MAX_WIDTH = 820;
 export const fmtMoney = (p: { amount: number; currency: string } | null) => (p ? `${p.currency} ${p.amount.toLocaleString('es-AR')}` : null);
 
 /** Contenedor de pantalla: respeta las áreas seguras (barra de estado/gestos de Android) y el teclado. */
@@ -20,7 +22,7 @@ export function Screen({ children, scroll = true, padded = true, edges = ['botto
   const s = useStyles((c) => ({ root: { flex: 1, backgroundColor: c.bg }, pad: { padding: space.lg, gap: space.md, paddingBottom: space.xxl } }));
   return (
     <SafeAreaView style={s.root} edges={edges}>
-      {scroll ? <ScrollView contentContainerStyle={padded ? s.pad : undefined} keyboardShouldPersistTaps="handled" refreshControl={refresh ? <RefreshControl refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} /> : undefined}>{children}</ScrollView> : <View style={[{ flex: 1 }, padded && { padding: space.lg }]}>{children}</View>}
+      {scroll ? <ScrollView contentContainerStyle={{ alignItems: 'center' }} keyboardShouldPersistTaps="handled" refreshControl={refresh ? <RefreshControl refreshing={refresh.refreshing} onRefresh={refresh.onRefresh} /> : undefined}><View style={[{ width: '100%', maxWidth: MAX_WIDTH }, padded && s.pad]}>{children}</View></ScrollView> : <View style={[{ flex: 1 }, padded && { padding: space.lg }]}>{children}</View>}
     </SafeAreaView>
   );
 }

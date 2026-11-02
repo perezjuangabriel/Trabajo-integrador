@@ -3,7 +3,7 @@ import { Linking, Platform, ScrollView, View, useWindowDimensions } from 'react-
 import { WebView } from 'react-native-webview';
 import { Image } from 'expo-image';
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { Banner, Body, Button, Chip, ErrorView, Loading, Muted, Pill, RatingLine, Row, STATUS_PILL, Screen, SectionTitle, Title, confirm, fmtMoney, showError, usePrompt } from '../components/ui';
+import { Banner, Body, MAX_WIDTH, Button, Chip, ErrorView, Loading, Muted, Pill, RatingLine, Row, STATUS_PILL, Screen, SectionTitle, Title, confirm, fmtMoney, showError, usePrompt } from '../components/ui';
 import { ReviewsSection } from '../components/ReviewsSection';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -18,7 +18,7 @@ type AnyDetail = PlaceDetail | ProductDetail | VideoDetail;
 export function DetailScreen() {
   const { params } = useRoute<RouteProp<RootStackParamList, 'Detail'>>();
   const { kind, id } = params as { kind: Kind; id: number };
-  const nav = useNav(); const { user, isStaff } = useAuth(); const { colors: c } = useTheme(); const { width } = useWindowDimensions();
+  const nav = useNav(); const { user, isStaff } = useAuth(); const { colors: c } = useTheme(); const width = Math.min(useWindowDimensions().width, MAX_WIDTH);
   const prompt = usePrompt();
   const [rk, setRk] = useState(0);
   const detail = useAsync(() => catalogApi.get(kind, id), [kind, id, rk]);
@@ -81,7 +81,7 @@ export function DetailScreen() {
 function Gallery({ images, width }: { images: { id: number; url: string }[]; width: number }) {
   const { colors: c } = useTheme();
   if (!images.length) return <View style={{ height: 160, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}><Muted>Sin fotos todavía</Muted></View>;
-  return <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>{images.map((im) => <Image key={im.id} source={{ uri: im.url }} style={{ width, height: 240, backgroundColor: c.surfaceAlt }} contentFit="cover" />)}</ScrollView>;
+  return <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>{images.map((im) => <Image key={im.id} source={{ uri: im.url }} style={{ width, aspectRatio: 16 / 10, maxHeight: 420, backgroundColor: c.surfaceAlt }} contentFit="cover" />)}</ScrollView>;
 }
 
 /** Reproduce dentro de la app solo si el proveedor lo permite (embedUrl); siempre ofrece abrir el enlace original. */

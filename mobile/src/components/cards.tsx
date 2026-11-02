@@ -28,7 +28,7 @@ function PlayButton({ size = 56 }: { size?: number }) {
 
 /** Tarjeta única para spots, productos y videos: foto protagonista, etiquetas flotantes, título y puntuación. */
 export function ContentCard({ kind, item, onPress, showStatus, wide, badge }: { kind: Kind; item: AnyCard; onPress: () => void; showStatus?: boolean; wide?: boolean; badge?: string }) {
-  const s = useStyles((p) => ({ img: { width: '100%', height: wide ? 200 : 160, backgroundColor: p.surfaceAlt }, body: { padding: 14, gap: 5 } }));
+  const s = useStyles((p) => ({ img: { width: '100%', aspectRatio: wide ? 16 / 9 : 16 / 10, backgroundColor: p.surfaceAlt }, body: { padding: 14, gap: 5 } }));
   const uri = imageOf(item);
   const price = kind === 'product' ? fmtMoney((item as ProductCard).price) : null;
   return (
@@ -59,7 +59,7 @@ export function HeroCard({ kind, item, label, onPress }: { kind: Kind; item: Any
   const count = item.reviewCount;
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${label}: ${cardTitle(item)}`} onPress={onPress}
-      style={({ pressed }) => [{ height: 280, borderRadius: radius.lg + 4, overflow: 'hidden', backgroundColor: c.surfaceAlt, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 6 }, pressed && { transform: [{ scale: 0.98 }] }]}>
+      style={({ pressed }) => [{ width: '100%', aspectRatio: 16 / 10, minHeight: 240, maxHeight: 440, borderRadius: radius.lg + 4, overflow: 'hidden', backgroundColor: c.surfaceAlt, shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 18, shadowOffset: { width: 0, height: 10 }, elevation: 6 }, pressed && { transform: [{ scale: 0.98 }] }]}>
       {uri ? <Image source={{ uri }} style={{ position: 'absolute', width: '100%', height: '100%' }} contentFit="cover" transition={250} /> : null}
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '75%', backgroundColor: 'rgba(0,0,0,0.28)' }} />
       <View style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '45%', backgroundColor: 'rgba(0,0,0,0.5)' }} />

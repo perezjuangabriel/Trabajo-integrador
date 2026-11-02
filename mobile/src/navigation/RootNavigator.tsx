@@ -1,5 +1,6 @@
 import React from 'react';
-import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { Platform } from 'react-native';
+import { DarkTheme, DefaultTheme, NavigationContainer, type LinkingOptions } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '../theme/ThemeContext';
@@ -34,13 +35,30 @@ function Tabs() {
   );
 }
 
+// Solo en web: cada pantalla tiene su URL, así funcionan Atrás/Adelante, recargar y compartir enlaces.
+// En el teléfono no se usa (el esquema spotcheck:// queda reservado para volver del login con Google/GitHub/Discord).
+const num = (v: string) => Number(v);
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: [],
+  config: {
+    screens: {
+      Main: { path: '', screens: { Home: '', Places: 'spots', Products: 'productos', Videos: 'videos', Profile: 'perfil' } },
+      Detail: { path: 'ver/:kind/:id', parse: { id: num } },
+      Form: { path: 'proponer/:kind/:id?', parse: { id: num } },
+      Login: 'ingresar', Register: 'registro', Forgot: 'recuperar', VerifyEmail: 'verificar',
+      Favorites: 'favoritos', MyReviews: 'mis-resenas', Activity: 'actividad', Submissions: 'propuestas', Settings: 'ajustes',
+      Moderation: 'moderacion', Admin: 'admin', AdminUsers: 'admin/usuarios', AdminCatalog: 'admin/catalogos', AdminFeatured: 'admin/destacados', AdminAudit: 'admin/auditoria', AdminSettings: 'admin/configuracion',
+    },
+  },
+};
+
 export function RootNavigator() {
   const { colors: c, isDark } = useTheme();
   const base = isDark ? DarkTheme : DefaultTheme;
   const theme = { ...base, colors: { ...base.colors, background: c.bg, card: c.surface, text: c.text, border: c.border, primary: c.primary, notification: c.primary } };
   const header = { headerStyle: { backgroundColor: c.surface }, headerTintColor: c.text, headerTitleStyle: { fontWeight: '700' as const }, contentStyle: { backgroundColor: c.bg } };
   return (
-    <NavigationContainer theme={theme}>
+    <NavigationContainer theme={theme} linking={Platform.OS === 'web' ? linking : undefined} documentTitle={{ formatter: (o) => (o?.title ? `${o.title} · SPOTCHECK` : 'SPOTCHECK') }}>
       <Stack.Navigator screenOptions={header}>
         <Stack.Screen name="Main" component={Tabs} options={{ headerShown: false }} />
         <Stack.Screen name="Detail" component={DetailScreen} options={{ title: '' }} />

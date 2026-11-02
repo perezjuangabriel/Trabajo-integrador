@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { FlatList, Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ContentCard } from '../components/cards';
-import { Button, Chip, EmptyView, ErrorView, Input, Loading, Muted, Row, Select, Title, useStyles } from '../components/ui';
+import { Button, Chip, EmptyView, ErrorView, Input, Loading, Muted, MAX_WIDTH, Row, Select, Title, useStyles } from '../components/ui';
 import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { catalogApi } from '../api/services';
@@ -22,6 +22,7 @@ const RATINGS = [{ value: 3, label: '3 ★ o más' }, { value: 4, label: '4 ★ 
 const REVIEWS = [{ value: 1, label: '1 o más' }, { value: 3, label: '3 o más' }, { value: 5, label: '5 o más' }, { value: 10, label: '10 o más' }];
 
 export function CatalogScreen({ kind }: { kind: Kind }) {
+  const winW = useWindowDimensions().width; const cols = winW >= 700 ? 2 : 1; const colW = Math.floor((Math.min(winW, MAX_WIDTH) - 32 - 12) / 2);
   const nav = useNav(); const { user } = useAuth(); const { colors: c } = useTheme();
   const s = useStyles((p) => ({ root: { flex: 1, backgroundColor: p.bg }, head: { padding: 16, paddingBottom: 8, gap: 10 }, fab: { position: 'absolute', right: 16, bottom: 16, backgroundColor: p.primary, paddingHorizontal: 18, paddingVertical: 14, borderRadius: 999, elevation: 4 } }));
   const [text, setText] = useState(''); const [q, setQ] = useState('');
@@ -45,8 +46,8 @@ export function CatalogScreen({ kind }: { kind: Kind }) {
       </View>
       {list.loading && !list.items.length ? <Loading /> : list.error && !list.items.length ? <ErrorView error={list.error} onRetry={list.reload} />
         : (
-          <FlatList data={list.items} keyExtractor={(i) => String(i.id)} contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 90 }}
-            renderItem={({ item }) => <ContentCard kind={kind} item={item} onPress={() => nav.navigate('Detail', { kind, id: item.id })} />}
+          <FlatList key={cols} numColumns={cols} columnWrapperStyle={cols > 1 ? { gap: 12 } : undefined} style={{ width: '100%', maxWidth: MAX_WIDTH, alignSelf: 'center' }} data={list.items} keyExtractor={(i) => String(i.id)} contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 90 }}
+            renderItem={({ item }) => <View style={cols > 1 ? { width: colW } : undefined}><ContentCard kind={kind} item={item} onPress={() => nav.navigate('Detail', { kind, id: item.id })} /></View>}
             onEndReached={list.loadMore} onEndReachedThreshold={0.5} refreshing={list.loading} onRefresh={list.reload}
             ListEmptyComponent={<EmptyView title="No encontramos resultados" hint={q || applied ? 'Probá con otra búsqueda o quitá filtros.' : 'Todavía no hay nada acá. ¡Proponé el primero!'}
               action={{ label: q || applied ? 'Limpiar filtros' : 'Proponer', onPress: () => (q || applied ? (setText(''), setFilters({})) : user ? nav.navigate('Form', { kind }) : nav.navigate('Login')) }} />}
