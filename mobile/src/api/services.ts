@@ -1,4 +1,5 @@
 import { api } from './index';
+import { toForm, type LocalImage } from '../lib/images';
 import type { ActivityItem, AuditItem, FeaturedSlot, HomeData, Kind, LookupItem, Page, Report, Review, ReviewsPage, Stats, User, AnyCard, PlaceDetail, ProductDetail, VideoDetail } from '../types';
 
 type Q = Record<string, string | number | boolean | null | undefined>;
@@ -41,7 +42,9 @@ export const catalogApi = {
   create: async (kind: Kind, body: unknown) => (await api.post<Record<string, { id: number }>>(ROUTE[kind], body))[KEY[kind]],
   update: async (kind: Kind, id: number, body: unknown) => (await api.patch<Record<string, { id: number }>>(`${ROUTE[kind]}/${id}`, body))[KEY[kind]],
   remove: (kind: Kind, id: number) => api.del<void>(`${ROUTE[kind]}/${id}`),
-  uploadImage: (kind: Kind, id: number, form: FormData) => api.upload<{ image: { id: number; url: string } }>(`${ROUTE[kind]}/${id}/images`, form),
+  uploadImage: async (kind: Kind, id: number, img: LocalImage) => (img.remote
+    ? api.post<{ image: { id: number; url: string } }>(`${ROUTE[kind]}/${id}/images`, { url: img.uri })
+    : api.upload<{ image: { id: number; url: string } }>(`${ROUTE[kind]}/${id}/images`, await toForm(img))),
   deleteImage: (kind: Kind, id: number, imageId: number) => api.del<void>(`${ROUTE[kind]}/${id}/images/${imageId}`),
   categories: (type: Kind) => api.get<Page<LookupItem>>('/categories', { type, pageSize: 100 }, { auth: 'optional' }),
   brands: () => api.get<Page<LookupItem>>('/brands', { pageSize: 200 }, { auth: 'optional' }),
@@ -54,7 +57,9 @@ export const reviewsApi = {
   create: (kind: Kind, id: number, b: { rating: number; comment: string }) => api.post<{ review: Review }>(`${ROUTE[kind]}/${id}/reviews`, b),
   update: (r: Review, b: { rating?: number; comment?: string }) => api.patch<{ review: Review }>(`${r.type === 'video_review' ? '/video-reviews' : '/reviews'}/${r.id}`, b),
   remove: (r: Review) => api.del<void>(`${r.type === 'video_review' ? '/video-reviews' : '/reviews'}/${r.id}`),
-  uploadImage: (id: number, form: FormData) => api.upload<{ image: { id: number; url: string } }>(`/reviews/${id}/images`, form),
+  uploadImage: async (id: number, img: LocalImage) => (img.remote
+    ? api.post<{ image: { id: number; url: string } }>(`/reviews/${id}/images`, { url: img.uri })
+    : api.upload<{ image: { id: number; url: string } }>(`/reviews/${id}/images`, await toForm(img))),
 };
 
 export const socialApi = {

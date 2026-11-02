@@ -8,12 +8,25 @@ import { catalogApi } from '../api/services';
 import { useAsync } from '../hooks';
 import { RootStackParamList, useNav } from '../navigation/types';
 import { isUrl, toNumber } from '../lib/validate';
-import { pickImages, toForm, type LocalImage } from '../lib/images';
+import { pickImages, type LocalImage } from '../lib/images';
 import type { Img, Kind, PlaceDetail, ProductDetail, VideoDetail } from '../types';
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const toggle = <T,>(arr: T[], v: T) => (arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** Campo para sumar una foto por enlace https (se guarda solo la URL; no se descarga ni verifica). */
+export function AddByUrl({ onAdd, disabled }: { onAdd: (i: LocalImage) => void; disabled?: boolean }) {
+  const [url, setUrl] = useState('');
+  const ok = /^https:\/\/[^\s/]+\.[^\s/]+\S*$/i.test(url.trim()) && url.trim().length <= 500;
+  if (disabled) return null;
+  return (
+    <View style={{ gap: 6 }}>
+      <Input label="O pegá el enlace de una foto (https)" value={url} onChangeText={setUrl} autoCapitalize="none" keyboardType="url" placeholder="https://..." />
+      <Button title="Agregar por enlace" variant="secondary" small disabled={!ok} onPress={() => { onAdd({ uri: url.trim(), name: 'enlace', type: 'url', remote: true }); setUrl(''); }} />
+    </View>
+  );
+}
 
 function ImagesField({ existing, onRemove, added, setAdded, max }: { existing: Img[]; onRemove: (i: Img) => void; added: LocalImage[]; setAdded: (a: LocalImage[]) => void; max: number }) {
   const room = max - existing.length - added.length;
@@ -26,7 +39,8 @@ function ImagesField({ existing, onRemove, added, setAdded, max }: { existing: I
         {added.map((i) => <View key={i.uri}><Image source={{ uri: i.uri }} style={{ width: 84, height: 84, borderRadius: 8 }} /><Chip label="Quitar" onPress={() => setAdded(added.filter((x) => x !== i))} /></View>)}
       </Row>
       {room > 0 ? <Button title={`Agregar fotos (${room} disponibles)`} variant="secondary" small onPress={add} /> : <Muted>Máximo de fotos alcanzado.</Muted>}
-      <Muted>JPEG, PNG o WebP de hasta 5 MB.</Muted>
+      <AddByUrl disabled={room <= 0} onAdd={(i) => setAdded([...added, i])} />
+      <Muted>Archivo JPEG, PNG o WebP de hasta 5 MB, o un enlace https (si el sitio de origen borra la foto, desaparece de SPOTCHECK).</Muted>
     </View>
   );
 }
@@ -54,9 +68,11 @@ export function FormScreen() {
 
   useEffect(() => { // precarga al editar
     const d = existing.data as (PlaceDetail & ProductDetail & VideoDetail) | null; if (!d) return;
-    if (kind === 'place') set({ name: d.name, description: d.description ?? '', categoryId: d.category.id, extraCats: d.extraCategories.map((x) => x.id), cityId: d.city.id, zone: d.zone ?? '', address: d.address ?? '',
+    if (kind === 'place') set({
+      name: d.name, description: d.description ?? '', categoryId: d.category.id, extraCats: d.extraCategories.map((x) => x.id), cityId: d.city.id, zone: d.zone ?? '', address: d.address ?? '',
       lat: d.latitude != null ? String(d.latitude) : '', lng: d.longitude != null ? String(d.longitude) : '', surfaceId: d.surfaceType?.id ?? null, obstacles: d.obstacles.map((x) => x.id), amenities: d.amenities.map((x) => x.id),
-      days: d.hours.map((h) => h.weekday), opens: d.hours[0]?.opensAt ?? '10:00', closes: d.hours[0]?.closesAt ?? '20:00' });
+      days: d.hours.map((h) => h.weekday), opens: d.hours[0]?.opensAt ?? '10:00', closes: d.hours[0]?.closesAt ?? '20:00'
+    });
     if (kind === 'product') set({ name: d.name, description: d.description ?? '', categoryId: d.category.id, brandId: d.brand.id, price: d.price ? String(d.price.amount) : '', currency: d.price?.currency ?? 'ARS', specs: d.specs });
     if (kind === 'video') set({ name: d.title, description: d.description ?? '', categoryId: d.category.id, url: d.url });
     if (kind !== 'video') setImgs(d.images);
@@ -82,10 +98,12 @@ export function FormScreen() {
       const desc = f.description.trim() || null;
       let body: Record<string, unknown>;
       if (kind === 'place') {
-        body = { name: f.name.trim(), description: desc, categoryId: f.categoryId, categoryIds: f.extraCats.filter((x) => x !== f.categoryId), zone: f.zone.trim() || null, address: f.address.trim() || null,
+        body = {
+          name: f.name.trim(), description: desc, categoryId: f.categoryId, categoryIds: f.extraCats.filter((x) => x !== f.categoryId), zone: f.zone.trim() || null, address: f.address.trim() || null,
           latitude: f.lat === '' ? null : toNumber(f.lat), longitude: f.lng === '' ? null : toNumber(f.lng), surfaceTypeId: f.surfaceId, obstacleIds: f.obstacles, amenityIds: f.amenities,
           hours: f.days.map((d) => ({ weekday: d, opensAt: f.opens, closesAt: f.closes })),
-          ...(f.newCity ? { newCity: { name: f.cityName.trim(), ...(f.cityRegion.trim() ? { region: f.cityRegion.trim() } : {}) } } : { cityId: f.cityId }) };
+          ...(f.newCity ? { newCity: { name: f.cityName.trim(), ...(f.cityRegion.trim() ? { region: f.cityRegion.trim() } : {}) } } : { cityId: f.cityId })
+        };
       } else if (kind === 'product') {
         body = { name: f.name.trim(), description: desc, brandId: f.brandId, categoryId: f.categoryId, price: f.price === '' ? null : { amount: toNumber(f.price), currency: f.currency.trim().toUpperCase() }, specs: f.specs.filter((s) => s.key.trim() && s.value.trim()) };
       } else body = { title: f.name.trim(), description: desc, url: f.url.trim(), categoryId: f.categoryId };
@@ -93,7 +111,7 @@ export function FormScreen() {
       const saved = edit ? await catalogApi.update(kind, id!, body) : await catalogApi.create(kind, body);
       let failed = 0;
       for (const r of removed) await catalogApi.deleteImage(kind, saved.id, r.id).catch(() => { failed++; });
-      for (const img of added) await catalogApi.uploadImage(kind, saved.id, toForm(img)).catch(() => { failed++; });
+      for (const img of added) await catalogApi.uploadImage(kind, saved.id, img).catch(() => { failed++; });
       const note = failed ? `\n\nNo se pudieron procesar ${failed} foto(s). Podés agregarlas editando.` : '';
       if (!edit && !isStaff) showError(new Error(`Tu propuesta quedó pendiente de revisión. Te mostramos su estado en "Mis propuestas".${note}`), '¡Gracias!');
       else if (note) showError(new Error(note.trim()), 'Guardado con avisos');

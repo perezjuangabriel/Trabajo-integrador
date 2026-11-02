@@ -8,6 +8,7 @@ import { assertEditable } from './catalogCommon.service.js';
 import { deleteStoredFiles } from '../utils/storage.js';
 import { badRequest, conflict, notFound } from '../utils/AppError.js';
 import { absoluteUrl } from '../utils/urls.js';
+import { parseImageUrl } from '../utils/imageUrl.js';
 
 /** Detecta el tipo REAL por la firma del archivo (no se confía en la extensión ni en el Content-Type del cliente). */
 export function detectImageType(buf) {
@@ -30,18 +31,20 @@ export async function storeImage(buffer, subdir) {
 
 const assertHasImages = (kind) => { if (!KINDS[kind].imageTable) throw badRequest('NO_IMAGES', `Los ${KINDS[kind].label}s no admiten imágenes propias`); };
 
-export async function addImage(kind, user, id, file) {
+export async function addImage(kind, user, id, file, url) {
   assertHasImages(kind);
-  if (!file) throw badRequest('FILE_REQUIRED', 'Falta el archivo (campo "image")');
+  if (!file && url === undefined) throw badRequest('FILE_REQUIRED', 'Enviá un archivo (campo "image") o una URL (campo "url")');
+  const external = file ? null : parseImageUrl(url); // se valida antes de tocar la base
   const row = await common.findRow(kind, id);
   assertEditable(user, row);
   if ((await common.countImages(kind, id)) >= MAX_IMAGES_PER_ENTITY) throw conflict('TOO_MANY_IMAGES', `Máximo ${MAX_IMAGES_PER_ENTITY} imágenes`);
-  const stored = await storeImage(file.buffer, kind === 'place' ? 'places' : 'products');
+  // Con URL externa no se guarda nada en disco: el enlace queda en la base y sobrevive a reinicios del servidor.
+  const stored = external ? { url: external, storagePath: null, mimeType: null, size: null } : await storeImage(file.buffer, kind === 'place' ? 'places' : 'products');
   try {
     const img = await common.insertImage(kind, id, { ...stored, position: await common.countImages(kind, id), uploadedBy: user.id });
     return { id: img.id, url: absoluteUrl(img.url), position: img.position };
   } catch (e) {
-    await deleteStoredFiles([stored.storagePath]); // no dejar archivos huérfanos si falla la BD
+    await deleteStoredFiles([stored.storagePath]); // no dejar archivos huérfanos si falla la BD (con URL externa es null: no hace nada)
     throw e;
   }
 }

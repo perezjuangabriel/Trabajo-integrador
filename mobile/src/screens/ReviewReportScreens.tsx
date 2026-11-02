@@ -6,7 +6,8 @@ import { Banner, Body, Button, Input, Muted, Row, Screen, Select, Stars, Title, 
 import { useAuth } from '../context/AuthContext';
 import { reviewsApi, socialApi } from '../api/services';
 import { RootStackParamList, useNav } from '../navigation/types';
-import { pickImages, toForm, type LocalImage } from '../lib/images';
+import { AddByUrl } from './FormScreen';
+import { pickImages, type LocalImage } from '../lib/images';
 
 export function ReviewFormScreen() {
   const { params } = useRoute<RouteProp<RootStackParamList, 'ReviewForm'>>();
@@ -23,7 +24,7 @@ export function ReviewFormScreen() {
     try {
       const saved = review ? (await reviewsApi.update(review, { rating, comment: comment.trim() })).review : (await reviewsApi.create(kind, id, { rating, comment: comment.trim() })).review;
       let failed = 0;
-      if (canPhotos) for (const p of photos.slice(0, Math.max(0, 4 - (review?.images.length ?? 0)))) await reviewsApi.uploadImage(saved.id, toForm(p)).catch(() => { failed++; });
+      if (canPhotos) for (const p of photos.slice(0, Math.max(0, 4 - (review?.images.length ?? 0)))) await reviewsApi.uploadImage(saved.id, p).catch(() => { failed++; });
       if (failed) showError(new Error(`No se pudieron subir ${failed} foto(s).`), 'Reseña guardada');
       if (saved.status === 'pending') showError(new Error('Tu reseña será visible cuando el equipo de moderación la apruebe.'), 'Pendiente de revisión');
       nav.goBack();
@@ -37,6 +38,7 @@ export function ReviewFormScreen() {
       <Input label="Comentario" value={comment} onChangeText={setComment} multiline maxLength={2000} error={tried && comment.trim().length < 3 ? 'Escribí al menos 3 caracteres' : null} hint={`${comment.length}/2000`} />
       {canPhotos ? (<>
         <Row wrap>{photos.map((p) => <Image key={p.uri} source={{ uri: p.uri }} style={{ width: 72, height: 72, borderRadius: 8 }} />)}</Row>
+        <AddByUrl disabled={photos.length >= 4} onAdd={(i) => setPhotos([...photos, i].slice(0, 4))} />
         <Button small variant="secondary" title="Agregar fotos (máx. 4)" onPress={async () => { try { setPhotos([...photos, ...(await pickImages(4))].slice(0, 4)); } catch (e) { showError(e); } }} />
       </>) : null}
       <Button title={review ? 'Guardar cambios' : 'Publicar reseña'} onPress={submit} loading={busy} />

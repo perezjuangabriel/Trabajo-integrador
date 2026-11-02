@@ -11,7 +11,7 @@ export const byId = (table) => ({
   update: async (req, res) => res.json({ data: { review: await svc.update(req.user, table, req.valid.params.id, req.valid.body) } }),
   remove: async (req, res) => { await svc.remove(req.user, table, req.valid.params.id, req.ip); res.status(204).end(); },
 });
-export const addImage = async (req, res) => res.status(201).json({ data: { image: await svc.addImage(req.user, req.valid.params.id, req.file) } });
+export const addImage = async (req, res) => res.status(201).json({ data: { image: await svc.addImage(req.user, req.valid.params.id, req.file, req.body?.url) } });
 export const removeImage = async (req, res) => { await svc.removeImage(req.user, req.valid.params.id, req.valid.params.imageId); res.status(204).end(); };
 export const mine = async (req, res) => res.json({ data: await svc.listMine(req.user, req.valid.query) });
 export const pending = async (req, res) => res.json({ data: await svc.pendingQueue(req.valid.query) });

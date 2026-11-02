@@ -8,6 +8,7 @@ import * as cc from './catalogCommon.service.js';
 import { storeImage } from './image.service.js';
 import { deleteStoredFiles } from '../utils/storage.js';
 import { absoluteUrl } from '../utils/urls.js';
+import { parseImageUrl } from '../utils/imageUrl.js';
 import { pageOf, offsetOf } from '../utils/pagination.js';
 import { badRequest, conflict, forbidden, notFound } from '../utils/AppError.js';
 
@@ -120,11 +121,12 @@ export async function remove(user, table, id, ip) {
 }
 
 // --- Fotos de la reseña (solo el autor; reseñas de lugares y productos) ---
-export async function addImage(user, id, file) {
-  if (!file) throw badRequest('FILE_REQUIRED', 'Falta el archivo (campo "image")');
+export async function addImage(user, id, file, url) {
+  if (!file && url === undefined) throw badRequest('FILE_REQUIRED', 'Enviá un archivo (campo "image") o una URL (campo "url")');
+  const external = file ? null : parseImageUrl(url);
   const row = await ownedOrFail(user, 'reviews', id);
   if ((await repo.countImages(id)) >= repo.MAX_REVIEW_IMAGES) throw conflict('TOO_MANY_IMAGES', `Máximo ${repo.MAX_REVIEW_IMAGES} fotos por reseña`);
-  const stored = await storeImage(file.buffer, 'reviews');
+  const stored = external ? { url: external, storagePath: null, mimeType: null, size: null } : await storeImage(file.buffer, 'reviews');
   try {
     const img = await repo.insertImage(row.id, { ...stored, position: await repo.countImages(id) });
     return { id: img.id, url: absoluteUrl(img.url) };

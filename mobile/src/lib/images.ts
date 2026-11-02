@@ -1,6 +1,8 @@
+import { Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
-export interface LocalImage { uri: string; name: string; type: string }
+/** `remote` = enlace externo (https): se guarda solo la URL, sin subir archivo. */
+export interface LocalImage { uri: string; name: string; type: string; remote?: boolean }
 
 /** Abre la galería (pide permiso). Devuelve [] si el usuario cancela. */
 export async function pickImages(max = 1): Promise<LocalImage[]> {
@@ -10,9 +12,10 @@ export async function pickImages(max = 1): Promise<LocalImage[]> {
   if (r.canceled) return [];
   return r.assets.map((a, i) => ({ uri: a.uri, name: a.fileName ?? `foto-${Date.now()}-${i}.jpg`, type: a.mimeType ?? 'image/jpeg' }));
 }
-/** multipart con el campo `image` que espera la API (JPEG, PNG o WebP, máx. 5 MB). */
-export function toForm(img: LocalImage): FormData {
+/** multipart con el campo `image` que espera la API (JPEG, PNG o WebP, máx. 5 MB). En web hay que mandar un Blob real. */
+export async function toForm(img: LocalImage): Promise<FormData> {
   const f = new FormData();
-  f.append('image', { uri: img.uri, name: img.name, type: img.type } as unknown as Blob);
+  if (Platform.OS === 'web') f.append('image', await (await fetch(img.uri)).blob(), img.name);
+  else f.append('image', { uri: img.uri, name: img.name, type: img.type } as unknown as Blob);
   return f;
 }

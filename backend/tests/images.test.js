@@ -83,4 +83,28 @@ describe('subida de imágenes', () => {
       expect(r.text ?? '').not.toContain('spotcheck-backend');
     }
   });
+
+  it('acepta una URL https externa (sin tocar el disco) y rechaza URLs inseguras', async () => {
+    const { auth, route, place } = await ownPlace();
+    const ok = await api().post(route).set(auth).send({ url: 'https://images.example.com/foto.jpg' });
+    expect(ok.status).toBe(201);
+    expect(ok.body.data.image.url).toBe('https://images.example.com/foto.jpg');
+    const [[row]] = await db.query('SELECT storage_path FROM place_images WHERE id = ?', [ok.body.data.image.id]);
+    expect(row.storage_path).toBeNull();
+    expect((await api().get(`/api/v1/places/${place.id}`).set(auth)).body.data.place.images[0].url).toBe('https://images.example.com/foto.jpg');
+    for (const bad of ['http://images.example.com/a.jpg', 'https://localhost/a.jpg', 'https://127.0.0.1/a.jpg', 'https://u:p@images.example.com/a.jpg', 'javascript:alert(1)', 'no-es-url', '']) {
+      const r = await api().post(route).set(auth).send({ url: bad });
+      expect(r.status, bad).toBe(400);
+    }
+    expect((await api().post(route).set(auth).send({})).status).toBe(400);
+    const del = await api().delete(`${route}/${ok.body.data.image.id}`).set(auth);
+    expect(del.status).toBeLessThan(300);
+  });
+
+  it('también en productos', async () => {
+    const u = await verifiedUser();
+    const p = (await api().post('/api/v1/products').set(u.auth).send({ name: `P ${Date.now()}`, brandId: 1, categoryId: 5 })).body.data.product;
+    const r = await api().post(`/api/v1/products/${p.id}/images`).set(u.auth).send({ url: 'https://cdn.example.com/p.png' });
+    expect(r.status).toBe(201);
+  });
 });
