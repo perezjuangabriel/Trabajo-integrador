@@ -53,8 +53,8 @@ export function Input({ label, error, hint, style, ...rest }: TextInputProps & {
 
 export function Card({ children, onPress, style }: { children: React.ReactNode; onPress?: () => void; style?: StyleProp<ViewStyle> }) {
   const { colors: c } = useTheme();
-  const base: ViewStyle = { backgroundColor: c.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: c.border, overflow: 'hidden' };
-  return onPress ? <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [base, pressed && { opacity: 0.9 }, style]}>{children}</Pressable> : <View style={[base, style]}>{children}</View>;
+  const base: ViewStyle = { backgroundColor: c.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: c.border, overflow: 'hidden', shadowColor: '#000', shadowOpacity: c.scheme === 'dark' ? 0.45 : 0.1, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 3 };
+  return onPress ? <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [base, pressed && { opacity: 0.92, transform: [{ scale: 0.975 }] }, style]}>{children}</Pressable> : <View style={[base, style]}>{children}</View>;
 }
 
 export function Chip({ label, active, onPress }: { label: string; active?: boolean; onPress?: () => void }) {
@@ -122,7 +122,7 @@ export function SectionTitle({ title, action }: { title: string; action?: { labe
   const { colors: c } = useTheme();
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: space.sm }}>
-      <Text accessibilityRole="header" style={{ color: c.text, fontSize: 19, fontWeight: '800' }}>{title}</Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}><View style={{ width: 4, height: 20, borderRadius: 2, backgroundColor: c.primary }} /><Text accessibilityRole="header" style={{ color: c.text, fontSize: 20, fontWeight: '800', letterSpacing: -0.3 }}>{title}</Text></View>
       {action ? <Text onPress={action.onPress} style={{ color: c.primary, fontWeight: '700' }}>{action.label}</Text> : null}
     </View>
   );
