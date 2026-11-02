@@ -8,11 +8,11 @@ import { useAsync } from '../hooks';
 import { useNav } from '../navigation/types';
 import type { Kind } from '../types';
 
-const QUICK: { label: string; emoji: string; go: (n: ReturnType<typeof useNav>) => void }[] = [
-  { label: 'Spots', emoji: '📍', go: (n) => (n as any).navigate('Main', { screen: 'Places' }) },
-  { label: 'Productos', emoji: '🛹', go: (n) => (n as any).navigate('Main', { screen: 'Products' }) },
-  { label: 'Videos', emoji: '🎬', go: (n) => (n as any).navigate('Main', { screen: 'Videos' }) },
-  { label: 'Favoritos', emoji: '❤️', go: (n) => n.navigate('Favorites') },
+const QUICK: { label: string; go: (n: ReturnType<typeof useNav>) => void }[] = [
+  { label: 'Spots', go: (n) => (n as any).navigate('Main', { screen: 'Places' }) },
+  { label: 'Productos', go: (n) => (n as any).navigate('Main', { screen: 'Products' }) },
+  { label: 'Videos', go: (n) => (n as any).navigate('Main', { screen: 'Videos' }) },
+  { label: 'Favoritos', go: (n) => n.navigate('Favorites') },
 ];
 
 export function HomeScreen() {
@@ -31,12 +31,12 @@ export function HomeScreen() {
       {user && !user.emailVerified ? <Banner text="Verificá tu correo para proponer contenido y reseñar." action={{ label: 'Verificar ahora', onPress: () => nav.navigate('VerifyEmail') }} /> : null}
       <Row gap={10} wrap>{QUICK.map((q) => (
         <Card key={q.label} onPress={() => q.go(nav)} style={{ width: '47%' }}>
-          <View style={{ padding: 14, alignItems: 'center', gap: 4 }}><Title size={26}>{q.emoji}</Title><Body>{q.label}</Body></View>
+          <View style={{ padding: 14, alignItems: 'center', gap: 4 }}><Body>{q.label}</Body></View>
         </Card>))}</Row>
       {empty ? <EmptyView title="Todavía no hay contenido" hint="Sé el primero en proponer un spot." action={{ label: 'Proponer un spot', onPress: () => (user ? nav.navigate('Form', { kind: 'place' }) : nav.navigate('Login')) }} /> : null}
-      {data.featuredVideo ? (<><SectionTitle title="🎬 Video de la semana" /><ContentCard kind="video" item={data.featuredVideo} wide onPress={() => open('video', data.featuredVideo!.id)} /></>) : null}
-      {data.featuredPlace ? (<><SectionTitle title="📍 Spot destacado" /><ContentCard kind="place" item={data.featuredPlace} wide onPress={() => open('place', data.featuredPlace!.id)} /></>) : null}
-      {data.featuredProduct ? (<><SectionTitle title="🛹 Producto destacado" /><ContentCard kind="product" item={data.featuredProduct} wide onPress={() => open('product', data.featuredProduct!.id)} /></>) : null}
+      {data.featuredVideo ? (<><SectionTitle title="Video de la semana" /><ContentCard kind="video" item={data.featuredVideo} wide onPress={() => open('video', data.featuredVideo!.id)} /></>) : null}
+      {data.featuredPlace ? (<><SectionTitle title="Spot destacado" /><ContentCard kind="place" item={data.featuredPlace} wide onPress={() => open('place', data.featuredPlace!.id)} /></>) : null}
+      {data.featuredProduct ? (<><SectionTitle title="Producto destacado" /><ContentCard kind="product" item={data.featuredProduct} wide onPress={() => open('product', data.featuredProduct!.id)} /></>) : null}
       {data.recentReviews.length ? (<>
         <SectionTitle title="Reseñas recientes" />
         {data.recentReviews.slice(0, 5).map((r, i) => (

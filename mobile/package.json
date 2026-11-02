@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "bundle:check": "expo export --platform android --output-dir /tmp/spotcheck-export"
+    "bundle:check": "expo export --platform android --output-dir /tmp/spotcheck-export",
+    "build:web": "expo export --clear --platform web --output-dir ../backend/public"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.16",

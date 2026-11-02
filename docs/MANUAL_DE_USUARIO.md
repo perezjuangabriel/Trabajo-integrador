@@ -53,11 +53,11 @@ La barra inferior tiene cinco pestañas:
 
 | Pestaña | Para qué sirve |
 |---|---|
-| 🏠 **Inicio** | Destacados y novedades |
-| 📍 **Spots** | Spots y skateparks |
-| 🛹 **Productos** | Catálogo de productos |
-| 🎬 **Videos** | Videos de skate |
-| 👤 **Perfil** | Tu cuenta, actividad y ajustes |
+| **Inicio** | Destacados y novedades |
+| **Spots** | Spots y skateparks |
+| **Productos** | Catálogo de productos |
+| **Videos** | Videos de skate |
+| **Perfil** | Tu cuenta, actividad y ajustes |
 
 - Tocá una tarjeta para abrir su **detalle**; volvé con la flecha del encabezado o el gesto "atrás" del teléfono.
 - Deslizá hacia abajo en una lista para **actualizarla**; al llegar al final se cargan más resultados.
@@ -67,7 +67,7 @@ La barra inferior tiene cinco pestañas:
 ## 4. Explorar: spots, productos y videos
 
 ### 4.1 Inicio
-- **🎬 Video de la semana**, **🛹 Producto destacado** y **📍 Spot destacado**: son iguales para todos los usuarios mientras dura su vigencia. Los elige un administrador o el algoritmo automático (ver `FEATURED_ALGORITHM.md`).
+- **Video de la semana**, **Producto destacado** y **Spot destacado**: son iguales para todos los usuarios mientras dura su vigencia. Los elige un administrador o el algoritmo automático (ver `FEATURED_ALGORITHM.md`).
 - **Spots populares**, **Productos populares** y **Reseñas recientes**.
 
 ### 4.2 Listas, búsqueda y filtros
@@ -89,15 +89,15 @@ En **Spots**, **Productos** y **Videos**:
 1. En el detalle, tocá el botón de reseña (requiere sesión y correo verificado).
 2. Elegí la **Puntuación** (1 a 5 estrellas) y escribí el **Comentario** (entre 3 y 2000 caracteres).
 3. Podés **Agregar fotos** (hasta 4; JPEG, PNG o WebP de hasta 5 MB). Las reseñas de videos no llevan fotos.
-4. Enviá. Tenés **una reseña por elemento**; podés **✏️ Editarla** o **🗑 Eliminarla** y volver a reseñar.
+4. Enviá. Tenés **una reseña por elemento**; podés **Editarla** o **Eliminarla** y volver a reseñar.
 
 Si la moderación previa de reseñas está activa, tu reseña queda **pendiente** hasta que un moderador la apruebe. Solo las reseñas visibles cuentan en el promedio.
 
 ### 5.2 Favoritos
-Tocá el corazón de un spot, producto o video para guardarlo. Lo encontrás en Perfil → **❤️ Mis favoritos**. Si un contenido se oculta, deja de listarse pero tu favorito se conserva.
+Tocá el corazón de un spot, producto o video para guardarlo. Lo encontrás en Perfil → **Mis favoritos**. Si un contenido se oculta, deja de listarse pero tu favorito se conserva.
 
 ### 5.3 Reportar contenido
-En un contenido o reseña inapropiada: **🚩 Reportar** → elegí el **Motivo** (spam, ofensivo, inexacto, duplicado, ilegal u otro), agregá **Detalles (opcional)** y **Enviar reporte**. No podés reportar lo tuyo ni reportar dos veces lo mismo. Un moderador lo revisa.
+En un contenido o reseña inapropiada: **Reportar** → elegí el **Motivo** (spam, ofensivo, inexacto, duplicado, ilegal u otro), agregá **Detalles (opcional)** y **Enviar reporte**. No podés reportar lo tuyo ni reportar dos veces lo mismo. Un moderador lo revisa.
 
 ## 6. Proponer contenido nuevo
 Desde las pestañas **Spots**, **Productos** o **Videos**, el botón de agregar abre el formulario de propuesta (requiere correo verificado):
@@ -107,12 +107,12 @@ Desde las pestañas **Spots**, **Productos** o **Videos**, el botón de agregar 
 - **Video:** título, enlace (YouTube, Vimeo u otro `http(s)`), categoría y descripción.
 
 Después podés **Agregar fotos** (spots y productos).
-Tu propuesta queda **pendiente** hasta que la revise un moderador. Seguila en Perfil → **📤 Mis propuestas**, donde ves su estado: *pendiente*, *publicada*, *rechazada* (con el motivo) u *oculta*. Podés editarla o eliminarla mientras no esté publicada; si corregís una rechazada vuelve a revisión. Hay un máximo de 10 propuestas pendientes por tipo.
+Tu propuesta queda **pendiente** hasta que la revise un moderador. Seguila en Perfil → **Mis propuestas**, donde ves su estado: *pendiente*, *publicada*, *rechazada* (con el motivo) u *oculta*. Podés editarla o eliminarla mientras no esté publicada; si corregís una rechazada vuelve a revisión. Hay un máximo de 10 propuestas pendientes por tipo.
 
 ## 7. Tu perfil y tus ajustes
 **Perfil** muestra tu nombre, rol y estado del correo, y accesos a:
-- ❤️ **Mis favoritos** · ⭐ **Mis reseñas** · 📤 **Mis propuestas** · 🕒 **Actividad reciente**
-- **Ajustes** (y, según tu rol, 🛡 *Moderación* o ⚙️ *Panel de administración*).
+- **Mis favoritos** · **Mis reseñas** · **Mis propuestas** · **Actividad reciente**
+- **Ajustes** (y, según tu rol, *Moderación* o *Panel de administración*).
 
 En **Ajustes**:
 
@@ -129,7 +129,7 @@ En **Ajustes**:
 Ajustes → **Eliminar mi cuenta** → confirmá, ingresá el código que llega por correo y tu contraseña. Tenés un **período de gracia (14 días por defecto)** para arrepentirte con *Cancelar la eliminación*. Pasado ese plazo se **eliminan tus reseñas, fotos, favoritos y vínculos**, y tus datos personales se anonimizan. No se puede deshacer. Los administradores no pueden eliminar su cuenta desde la app.
 
 ## 8. Guía para moderadores
-Los moderadores pueden hacer todo lo del usuario y, además, entrar a Perfil → **🛡 Moderación**, con cuatro pestañas:
+Los moderadores pueden hacer todo lo del usuario y, además, entrar a Perfil → **Moderación**, con cuatro pestañas:
 
 | Pestaña | Función |
 |---|---|
@@ -141,7 +141,7 @@ Los moderadores pueden hacer todo lo del usuario y, además, entrar a Perfil →
 Además pueden **editar** contenido de cualquier usuario (cada cambio queda registrado). Los moderadores **ocultan, no eliminan**, y no acceden a usuarios, destacados ni ajustes. Lo que publican ellos mismos no pasa por revisión.
 
 ## 9. Guía para administradores
-Los administradores tienen todo lo anterior y Perfil → **⚙️ Panel de administración**:
+Los administradores tienen todo lo anterior y Perfil → **Panel de administración**:
 
 | Sección | Función |
 |---|---|

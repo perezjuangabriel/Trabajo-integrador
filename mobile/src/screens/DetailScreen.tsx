@@ -56,10 +56,10 @@ export function DetailScreen() {
         {!published && STATUS_PILL[d.status] ? <Row><Pill {...STATUS_PILL[d.status]} /><Muted>{d.status === 'pending' ? 'Visible solo para vos y el equipo de moderación' : ''}</Muted></Row> : null}
         {d.rejectionReason ? <Banner tone="danger" text={`Motivo del rechazo: ${d.rejectionReason}`} /> : null}
         <Row wrap>
-          <Chip label={fav ? '❤️ En favoritos' : '🤍 Favorito'} active={fav} onPress={toggleFav} />
-          {d.permissions.canEdit ? <Chip label="✏️ Editar" onPress={() => nav.navigate('Form', { kind, id })} /> : null}
-          {user && published ? <Chip label="🚩 Reportar" onPress={() => nav.navigate('Report', { targetType: kind, targetId: id, label: title })} /> : null}
-          {d.permissions.canDelete ? <Chip label="🗑 Eliminar" onPress={remove} /> : null}
+          <Chip label={fav ? 'En favoritos' : 'Favorito'} active={fav} onPress={toggleFav} />
+          {d.permissions.canEdit ? <Chip label="Editar" onPress={() => nav.navigate('Form', { kind, id })} /> : null}
+          {user && published ? <Chip label="Reportar" onPress={() => nav.navigate('Report', { targetType: kind, targetId: id, label: title })} /> : null}
+          {d.permissions.canDelete ? <Chip label="Eliminar" onPress={remove} /> : null}
         </Row>
         {isStaff ? (
           <Row wrap>
@@ -80,7 +80,7 @@ export function DetailScreen() {
 
 function Gallery({ images, width }: { images: { id: number; url: string }[]; width: number }) {
   const { colors: c } = useTheme();
-  if (!images.length) return <View style={{ height: 160, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}><Title size={40}>📷</Title><Muted>Sin fotos todavía</Muted></View>;
+  if (!images.length) return <View style={{ height: 160, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}><Muted>Sin fotos todavía</Muted></View>;
   return <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>{images.map((im) => <Image key={im.id} source={{ uri: im.url }} style={{ width, height: 240, backgroundColor: c.surfaceAlt }} contentFit="cover" />)}</ScrollView>;
 }
 
@@ -98,7 +98,7 @@ function VideoPlayer({ video, width }: { video: VideoDetail; width: number }) {
             onError={() => setFailed(true)} onHttpError={() => setFailed(true)} />
         </View>
       ) : video.thumbnailUrl ? <Image source={{ uri: video.thumbnailUrl }} style={{ width, height: h, backgroundColor: c.surfaceAlt }} contentFit="cover" />
-        : <View style={{ width, height: h, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}><Title size={40}>🎬</Title></View>}
+        : <View style={{ width, height: h, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}><Muted>Video</Muted></View>}
       <View style={{ padding: 16, paddingBottom: 0, gap: 6 }}>
         {failed ? <Muted>Este video no permite reproducirse dentro de la app.</Muted> : !video.embedUrl ? <Muted>Este sitio no permite reproducción integrada: se abre en el navegador.</Muted> : null}
         <Button title={video.provider === 'youtube' ? 'Abrir en YouTube' : 'Abrir video original'} variant="secondary" small onPress={() => Linking.openURL(video.url).catch(() => showError(new Error('No se pudo abrir el enlace')))} />
@@ -113,7 +113,7 @@ function PlaceInfo({ p }: { p: PlaceDetail }) {
   return (<>
     <Row wrap><Chip label={p.category.name} active />{p.extraCategories.map((x) => <Chip key={x.id} label={x.name} />)}</Row>
     {p.description ? <Body>{p.description}</Body> : null}
-    <Muted>📍 {[p.address, p.zone, p.city.name].filter(Boolean).join(' · ')}</Muted>
+    <Muted>{[p.address, p.zone, p.city.name].filter(Boolean).join(' · ')}</Muted>
     {geo ? <Button small variant="secondary" title="Ver en el mapa" onPress={() => Linking.openURL(geo)} /> : null}
     {p.surfaceType ? <Muted>Superficie: {p.surfaceType.name}</Muted> : null}
     {p.obstacles.length ? (<><SectionTitle title="Obstáculos" /><Tags items={p.obstacles} /></>) : null}

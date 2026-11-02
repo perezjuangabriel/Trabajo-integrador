@@ -92,7 +92,6 @@ export function ErrorView({ error, onRetry }: { error: unknown; onRetry?: () => 
   const offline = error instanceof ApiError && (error.code === 'NETWORK' || error.code === 'TIMEOUT');
   return (
     <View style={{ padding: space.xl, alignItems: 'center', gap: 10 }}>
-      <Text style={{ fontSize: 34 }}>{offline ? '📡' : '⚠️'}</Text>
       <Text style={{ color: c.text, fontWeight: '700', fontSize: 16, textAlign: 'center' }}>{offline ? 'Sin conexión' : 'Algo salió mal'}</Text>
       <Text style={{ color: c.muted, textAlign: 'center' }}>{messageOf(error)}</Text>
       {onRetry ? <Button title="Reintentar" onPress={onRetry} small variant="secondary" /> : null}
@@ -103,7 +102,6 @@ export function EmptyView({ title, hint, action }: { title: string; hint?: strin
   const { colors: c } = useTheme();
   return (
     <View style={{ padding: space.xl, alignItems: 'center', gap: 8 }}>
-      <Text style={{ fontSize: 34 }}>🛹</Text>
       <Text style={{ color: c.text, fontWeight: '700', fontSize: 16, textAlign: 'center' }}>{title}</Text>
       {hint ? <Text style={{ color: c.muted, textAlign: 'center' }}>{hint}</Text> : null}
       {action ? <Button title={action.label} onPress={action.onPress} small /> : null}

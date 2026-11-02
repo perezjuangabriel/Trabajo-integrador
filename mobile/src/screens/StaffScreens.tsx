@@ -36,7 +36,7 @@ export function ModerationScreen() {
       <Row wrap>{TABS.map((t) => <Chip key={t.k} label={t.l} active={tab === t.k} onPress={() => setTab(t.k)} />)}</Row>
       {tab === 'proposals' ? (<>
         <Row>{(['place', 'product', 'video'] as Kind[]).map((k) => <Chip key={k} label={{ place: 'Spots', product: 'Productos', video: 'Videos' }[k]} active={kind === k} onPress={() => setKind(k)} />)}</Row>
-        <Paged list={queue} empty="No hay propuestas pendientes 🎉" render={(i) => (
+        <Paged list={queue} empty="No hay propuestas pendientes " render={(i) => (
           <View style={{ gap: 6 }}><ContentCard kind={kind} item={i} showStatus onPress={() => nav.navigate('Detail', { kind, id: i.id })} />
             <Row><View style={{ flex: 1 }}><Button small title="Aprobar" onPress={() => run(() => staffApi.act(kind, i.id, 'approve'), queue.reload)} /></View><View style={{ flex: 1 }}><Button small variant="danger" title="Rechazar" onPress={() => reject(kind, i.id, queue.reload)} /></View></Row></View>)} />
       </>) : null}
@@ -47,7 +47,7 @@ export function ModerationScreen() {
             <Row><Button small title="Aprobar" onPress={() => run(() => staffApi.act(rtype, r.id, 'approve'), reviews.reload)} /><Button small variant="danger" title="Ocultar" onPress={() => run(() => staffApi.act(rtype, r.id, 'hide', 'Rechazada en premoderación'), reviews.reload)} /></Row></View></Card>)} />
       </>) : null}
       {tab === 'reports' ? (
-        <Paged list={reports} empty="No hay reportes abiertos 🎉" render={(r) => (
+        <Paged list={reports} empty="No hay reportes abiertos " render={(r) => (
           <Card><View style={{ padding: 12, gap: 6 }}><Row><Pill text={r.reason} tone="warning" /><Muted>{r.target.type} #{r.target.id}</Muted></Row>
             <Title size={15}>{r.target.label ?? '(contenido no disponible)'}</Title>{r.details ? <Body>{r.details}</Body> : null}<Muted>Reportó {r.reporter?.displayName ?? '—'} · {fmtDate(r.createdAt)}</Muted>
             <Row wrap><Button small title="Resolver y ocultar" onPress={() => run(() => staffApi.resolve(r.id, true, 'Contenido ocultado'), reports.reload)} />

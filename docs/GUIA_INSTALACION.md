@@ -28,7 +28,7 @@ spotcheck/
    - Alternativa sin Node: en phpMyAdmin importá, en este orden, `database/00_create_database.sql`, `database/schema.sql` y `database/seed.sql`.
 3. Si tu MySQL tiene contraseña u otro puerto, ajustalo en `backend/.env` (paso 3.2).
 
-> ⚠️ `db:seed` **borra y recrea** la base `spotcheck`. Úsalo solo en desarrollo. Para producción usá `db:setup` (solo tablas, ver `DEPLOY_RAILWAY.md`).
+> `db:seed` **borra y recrea** la base `spotcheck`. Úsalo solo en desarrollo. Para producción usá `db:setup` (solo tablas, ver `DEPLOY_RENDER.md`).
 
 ## 3. Backend
 
@@ -52,16 +52,18 @@ node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 | `NODE_ENV` | `development` | `production` en el servidor |
 | `PORT` | `3000` | Puerto de la API |
 | `DB_HOST` · `DB_PORT` · `DB_USER` · `DB_PASSWORD` · `DB_NAME` | `127.0.0.1` · `3306` · `root` · *(vacío)* · `spotcheck` | Conexión a MySQL local |
-| `MYSQL_URL` | — | URL completa (Railway). Si existe, tiene prioridad sobre `DB_*` |
+| `MYSQL_URL` | — | URL completa de la base en la nube. Si existe, tiene prioridad sobre `DB_*` |
+| `DB_SSL` · `DB_SSL_CA` | `false` · — | `true` para bases en la nube (Aiven); `DB_SSL_CA` opcional (certificado CA en PEM) |
+| `WEB_DIR` | `./public` | Carpeta de la web exportada; si existe, el backend la sirve en `/` |
 | `JWT_ACCESS_SECRET` | — | **Obligatoria.** Firma de los tokens de acceso |
 | `JWT_ACCESS_TTL` | `15m` | Vida del token de acceso |
 | `REFRESH_TOKEN_TTL_DAYS` | `30` | Vida de la sesión persistente |
 | `CODE_TTL_MIN` · `SENSITIVE_TTL_MIN` | `15` · `5` | Vigencia de los códigos de 6 dígitos y del token de operación sensible |
 | `BCRYPT_COST` | `12` | Costo del hash de contraseñas |
-| `TRUST_PROXY` | `1` | Cantidad de proxies delante (Railway = 1; en local podés dejarlo) |
+| `TRUST_PROXY` | `1` | Cantidad de proxies delante (Render = 1; en local podés dejarlo) |
 | `CORS_ORIGINS` | *(vacío)* | Orígenes permitidos; la app móvil no lo necesita |
 | `RESEND_API_KEY` · `MAIL_FROM` | — | Correo real con Resend. **Sin clave no se envía nada**: en desarrollo el código se imprime en la consola del servidor |
-| `UPLOADS_DIR` | `./uploads` | Carpeta de imágenes (en Railway, el volumen) |
+| `UPLOADS_DIR` | `./uploads` | Carpeta de imágenes (en Render gratis es efímero) |
 | `PUBLIC_BASE_URL` | `http://localhost:3000` | URL pública del servidor; arma las URLs absolutas de las imágenes |
 | `OAUTH_APP_REDIRECTS` | `spotcheck://auth` | Destinos permitidos para volver a la app (lista separada por comas) |
 | `GOOGLE_*` · `GITHUB_*` · `DISCORD_*` | — | `CLIENT_ID` / `CLIENT_SECRET`. Ver `OAUTH.md`. Sin ellas, ese proveedor responde `503 PROVIDER_NOT_CONFIGURED` |
@@ -93,7 +95,7 @@ ADMIN_EMAIL=tu@correo.com ADMIN_PASSWORD='UnaClaveSegura1' npm run create-admin
 
 ### 3.5 Pruebas
 ```bash
-npm test                 # 198 pruebas de integración con su propia base `spotcheck_test`
+npm test                 # 201 pruebas de integración con su propia base `spotcheck_test`
 DB_PORT=3307 npm test    # contra otro servidor/puerto
 ```
 Nunca tocan la base `spotcheck`.
@@ -113,7 +115,7 @@ La URL de la API se resuelve así (primero la que exista): variable `EXPO_PUBLIC
 |---|---|
 | Emulador Android (Android Studio) | `http://10.0.2.2:3000/api/v1` (**ya es el valor por defecto**) |
 | Teléfono real con Expo Go (misma red Wi‑Fi que la PC) | `http://IP-DE-TU-PC:3000/api/v1` (en Windows: `ipconfig`; en Mac/Linux: `ip a`) |
-| Servidor desplegado | `https://TU-APP.up.railway.app/api/v1` |
+| Servidor desplegado | `https://TU-APP.onrender.com/api/v1` |
 
 Ejemplo para teléfono real:
 ```bash
@@ -132,20 +134,24 @@ Otros scripts: `npm run typecheck` (TypeScript) y `npm test` (16 pruebas del cli
 
 > **Limitación de Expo Go:** el inicio de sesión con Google/GitHub/Discord necesita el esquema propio `spotcheck://`, que solo existe en un build propio (APK o development build). Con Expo Go probá correo y contraseña. Detalle en `OAUTH.md`.
 
-### 4.4 Ejecutar en el navegador (versión web)
-Sirve para probar rápido desde la PC, sin teléfono. Está pensada para **desarrollo y demostración**, no como producción.
-1. En `backend/.env` poné `CORS_ORIGINS=http://localhost:8081` y reiniciá el backend (sin esto el navegador bloquea las llamadas a la API).
-2. En otra terminal:
-   ```bash
-   cd mobile
-   npm install
-   npm run web          # abre http://localhost:8081
-   ```
-   La app usa por defecto `http://localhost:3000/api/v1`.
-3. Limitaciones en la web: la sesión se guarda en `localStorage` (no existe el almacén seguro del teléfono); los videos no se reproducen dentro de la app (se muestra la miniatura y el enlace al sitio original); el login con Google/GitHub/Discord no está verificado en web.
+### 4.4 Versión web
+Sirve para probar desde la PC sin teléfono y es lo que se publica en Render. Dos formas:
+
+**a) Desarrollo (recarga en vivo)**
+1. En `backend/.env` poné `CORS_ORIGINS=http://localhost:8081` y reiniciá el backend.
+2. `cd mobile && npm install && npm run web` (abre `http://localhost:8081`; apunta solo a `http://localhost:3000/api/v1`).
+
+**b) Servida por el propio backend (como en producción)**
+```bash
+npm run build:web      # exporta la web a backend/public (desde la raíz)
+npm run dev            # abrí http://localhost:3000
+```
+En este modo la web usa el mismo origen que la API, sin CORS. La carpeta `backend/public` va en el repo a propósito (Render gratis no tiene memoria para compilarla); volvé a ejecutar `npm run build:web` cada vez que cambies la app.
+
+Limitaciones de la web: la sesión se guarda en `localStorage` (no existe el almacén seguro del teléfono); los videos no se reproducen dentro de la app (miniatura y enlace al sitio original); el login con Google/GitHub/Discord no está verificado en web.
 
 ## 5. Generar el APK con EAS
-Requiere: cuenta en expo.dev y un backend accesible por internet con HTTPS (ver `DEPLOY_RAILWAY.md`); un APK de release no puede hablar con `http://` plano.
+Requiere: cuenta en expo.dev y un backend accesible por internet con HTTPS (ver `DEPLOY_RENDER.md`); un APK de release no puede hablar con `http://` plano.
 
 ```bash
 cd mobile
@@ -153,7 +159,7 @@ npm install -g eas-cli
 eas login
 eas init                       # vincula el proyecto y escribe el projectId en app.json
 ```
-1. En `mobile/eas.json`, reemplazá `https://TU-APP.up.railway.app/api/v1` por tu URL real en los perfiles `preview` y `production` (variable `EXPO_PUBLIC_API_URL`). **No pongas claves ahí**: solo la URL pública.
+1. En `mobile/eas.json`, reemplazá `https://TU-APP.onrender.com/api/v1` por tu URL real en los perfiles `preview` y `production` (variable `EXPO_PUBLIC_API_URL`). **No pongas claves ahí**: solo la URL pública.
 2. Generá el APK:
    ```bash
    eas build --platform android --profile preview

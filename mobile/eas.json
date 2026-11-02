@@ -10,12 +10,12 @@
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://TU-APP.up.railway.app/api/v1" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://TU-APP.onrender.com/api/v1" }
     },
     "production": {
       "autoIncrement": true,
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://TU-APP.up.railway.app/api/v1" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://TU-APP.onrender.com/api/v1" }
     }
   }
 }

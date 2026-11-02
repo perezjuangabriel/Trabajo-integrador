@@ -11,14 +11,14 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0E0E10"
+      "backgroundColor": "#0B1020"
     },
     "android": {
       "package": "com.spotcheck.app",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#0E0E10"
+        "backgroundColor": "#0B1020"
       },
       "softwareKeyboardLayoutMode": "resize",
       "permissions": [

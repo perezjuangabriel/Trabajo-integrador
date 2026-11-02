@@ -140,7 +140,7 @@ export function FormScreen() {
       </>) : null}
       {kind === 'product' ? (<>
         <SectionTitle title="Especificaciones" />
-        {f.specs.map((s, i) => <Row key={i}><View style={{ flex: 1 }}><Input placeholder="Ej.: Ancho" value={s.key} onChangeText={(v) => set({ specs: f.specs.map((x, j) => (j === i ? { ...x, key: v } : x)) })} /></View><View style={{ flex: 1 }}><Input placeholder="8.25 in" value={s.value} onChangeText={(v) => set({ specs: f.specs.map((x, j) => (j === i ? { ...x, value: v } : x)) })} /></View><Chip label="✕" onPress={() => set({ specs: f.specs.filter((_, j) => j !== i) })} /></Row>)}
+        {f.specs.map((s, i) => <Row key={i}><View style={{ flex: 1 }}><Input placeholder="Ej.: Ancho" value={s.key} onChangeText={(v) => set({ specs: f.specs.map((x, j) => (j === i ? { ...x, key: v } : x)) })} /></View><View style={{ flex: 1 }}><Input placeholder="8.25 in" value={s.value} onChangeText={(v) => set({ specs: f.specs.map((x, j) => (j === i ? { ...x, value: v } : x)) })} /></View><Chip label="Quitar" onPress={() => set({ specs: f.specs.filter((_, j) => j !== i) })} /></Row>)}
         {f.specs.length < 20 ? <Button small variant="secondary" title="Agregar especificación" onPress={() => set({ specs: [...f.specs, { key: '', value: '' }] })} /> : null}
       </>) : null}
       {kind !== 'video' ? <ImagesField existing={imgs} onRemove={(i) => { setImgs(imgs.filter((x) => x.id !== i.id)); setRemoved([...removed, i]); }} added={added} setAdded={setAdded} max={8} /> : null}

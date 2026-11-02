@@ -8,9 +8,9 @@ const schema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     PORT: z.coerce.number().default(3000),
-    TRUST_PROXY: z.coerce.number().default(1), // Railway está detrás de 1 proxy
+    TRUST_PROXY: z.coerce.number().default(1), // Render está detrás de 1 proxy
 
-    // MySQL: URL completa (Railway la entrega como MYSQL_URL) o variables sueltas (XAMPP).
+    // MySQL: URL completa (Render/Aiven la entregan como URL) o variables sueltas (XAMPP).
     DATABASE_URL: z.string().optional(),
     MYSQL_URL: z.string().optional(),
     DB_HOST: z.string().default('127.0.0.1'),
@@ -18,6 +18,9 @@ const schema = z
     DB_USER: z.string().default('root'),
     DB_PASSWORD: z.string().default(''),
     DB_NAME: z.string().default('spotcheck'),
+    DB_SSL: z.enum(['true', 'false']).default('false'), // true para bases en la nube (Aiven, etc.)
+    DB_SSL_CA: z.string().optional(), // certificado CA en PEM; si falta, la conexión se cifra pero no se verifica el servidor
+    WEB_DIR: z.string().default('./public'), // carpeta de la versión web exportada (si existe, se sirve en /)
 
     // Secreto para firmar JWT y para el HMAC de los códigos de un solo uso.
     JWT_ACCESS_SECRET: z.string().min(32, 'JWT_ACCESS_SECRET debe tener al menos 32 caracteres'),

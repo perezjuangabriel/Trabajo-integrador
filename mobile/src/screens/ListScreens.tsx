@@ -24,7 +24,7 @@ export function FavoritesScreen() {
   const list = usePaginated((p) => socialApi.favList(kind, p), [kind, user?.id]);
   if (!user) return <Screen><NeedLogin /></Screen>;
   return <Screen scroll={false}><KindTabs kind={kind} onChange={setKind} />
-    <Paged list={list} render={(i) => <ContentCard kind={kind} item={i} onPress={() => nav.navigate('Detail', { kind, id: i.id })} />} empty={<EmptyView title="Todavía no guardaste favoritos" hint="Tocá 🤍 en cualquier spot, producto o video." />} /></Screen>;
+    <Paged list={list} render={(i) => <ContentCard kind={kind} item={i} onPress={() => nav.navigate('Detail', { kind, id: i.id })} />} empty={<EmptyView title="Todavía no guardaste favoritos" hint="Tocá «Favorito» en cualquier spot, producto o video." />} /></Screen>;
 }
 
 export function SubmissionsScreen() {
@@ -46,7 +46,6 @@ export function MyReviewsScreen() {
         {r.status !== 'visible' && STATUS_PILL[r.status] ? <Pill {...STATUS_PILL[r.status]} /> : null}</View></Card>)} /></Screen>;
 }
 
-const ICON = { review: '⭐', favorite: '❤️', submission: '📤' } as const;
 const VERB = { review: 'Reseñaste', favorite: 'Guardaste', submission: 'Propusiste' } as const;
 export function ActivityScreen() {
   const nav = useNav(); const { user } = useAuth();
@@ -54,5 +53,5 @@ export function ActivityScreen() {
   if (!user) return <Screen><NeedLogin /></Screen>;
   return <Screen scroll={false}><Paged list={list} empty={<EmptyView title="Sin actividad todavía" hint="Tus reseñas, favoritos y propuestas aparecen acá." />} render={(a) => (
     <Card onPress={() => nav.navigate('Detail', { kind: a.target.kind, id: a.target.id })}><View style={{ padding: 12, gap: 2 }}>
-      <Body>{ICON[a.type]} {VERB[a.type]} «{a.target.name}»{a.rating ? ` · ${a.rating}★` : ''}</Body><Muted>{fmtDate(a.at)}{a.status ? ` · ${STATUS_PILL[a.status]?.text ?? a.status}` : ''}</Muted></View></Card>)} /></Screen>;
+      <Body>{VERB[a.type]} «{a.target.name}»{a.rating ? ` · ${a.rating}★` : ''}</Body><Muted>{fmtDate(a.at)}{a.status ? ` · ${STATUS_PILL[a.status]?.text ?? a.status}` : ''}</Muted></View></Card>)} /></Screen>;
 }

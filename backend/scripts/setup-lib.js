@@ -9,7 +9,7 @@ const dbDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../
 
 /** Crea (si hace falta) la base y recrea tablas; opcionalmente carga los datos de prueba. DESTRUCTIVO. */
 export async function setupDatabase({ seed = false } = {}) {
-  // Con URL (Railway) la base ya existe. En local la creamos si hace falta.
+  // Con URL (base en la nube) la base ya existe. En local la creamos si hace falta.
   if (!databaseUrl) {
     const admin = await mysql.createConnection(buildConnectionConfig({ withDatabase: false }));
     await admin.query(`CREATE DATABASE IF NOT EXISTS \`${env.DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);

@@ -260,4 +260,4 @@ El servidor valida el rol **en cada request** leyéndolo de la base (suspender o
 - Tareas programadas dentro del proceso: baja de cuentas vencidas (03:15 UTC), limpieza de tokens (03:30) y destacados (cada hora).
 
 ## Pruebas de la API
-`cd backend && npm test` → 198 pruebas de integración (supertest) contra MySQL real, verificadas en MariaDB 10.11 y MySQL 8.0.46.
+`cd backend && npm test` → 201 pruebas de integración (supertest) contra MySQL real, verificadas en MariaDB 10.11 y MySQL 8.0.46.

@@ -22,15 +22,15 @@ Seguridad: `state` firmado (10 min); destino de retorno en lista blanca (`OAUTH_
 ## URLs de redirección (callback) a registrar
 | Entorno | Callback |
 |---|---|
-| Producción (Railway) | `https://TU-APP.up.railway.app/api/v1/auth/oauth/<proveedor>/callback` |
+| Producción (Render) | `https://TU-APP.onrender.com/api/v1/auth/oauth/<proveedor>/callback` |
 | Desarrollo con el teléfono | Igual, pero con la URL **pública** de un túnel (ngrok / cloudflared). Un `192.168.x.x` NO sirve: Google lo rechaza y el teléfono necesita alcanzar el callback |
 | Solo PC (sin teléfono) | `http://localhost:3000/api/v1/auth/oauth/<proveedor>/callback` |
 
 `<proveedor>` = `google`, `github` o `discord`. Debe coincidir **exactamente** con `PUBLIC_BASE_URL` del servidor.
 
-## Variables (solo en el servidor / Railway → Variables)
+## Variables (solo en el servidor / Render → Environment)
 ```
-PUBLIC_BASE_URL=https://TU-APP.up.railway.app
+PUBLIC_BASE_URL=https://TU-APP.onrender.com
 OAUTH_APP_REDIRECTS=spotcheck://auth        # esquema de la app (se define en app.json en la Etapa 6)
 GOOGLE_CLIENT_ID=…   GOOGLE_CLIENT_SECRET=…
 GITHUB_CLIENT_ID=…   GITHUB_CLIENT_SECRET=…

@@ -9,6 +9,7 @@
     "dev": "npm --prefix backend run dev",
     "start": "npm --prefix backend start",
     "test": "npm --prefix backend test",
-    "create-admin": "npm --prefix backend run create-admin"
+    "create-admin": "npm --prefix backend run create-admin",
+    "build:web": "npm --prefix mobile run build:web"
   }
 }

@@ -35,12 +35,12 @@ export function ProfileScreen() {
       {user.status === 'pending_deletion' ? <Banner tone="danger" text="Tu cuenta está programada para eliminarse. Podés cancelarlo en Ajustes." action={{ label: 'Ir a Ajustes', onPress: () => nav.navigate('Settings') }} /> : null}
       {user.bio ? <Body>{user.bio}</Body> : null}
       <SectionTitle title="Mi actividad" />
-      <Item label="❤️ Mis favoritos" onPress={() => nav.navigate('Favorites')} />
-      <Item label="⭐ Mis reseñas" onPress={() => nav.navigate('MyReviews')} />
-      <Item label="📤 Mis propuestas" onPress={() => nav.navigate('Submissions')} />
-      <Item label="🕒 Actividad reciente" onPress={() => nav.navigate('Activity')} />
-      {isStaff ? (<><SectionTitle title="Equipo" /><Item label="🛡 Moderación" onPress={() => nav.navigate('Moderation')} /></>) : null}
-      {isAdmin ? <Item label="⚙️ Panel de administración" onPress={() => nav.navigate('Admin')} /> : null}
+      <Item label="Mis favoritos" onPress={() => nav.navigate('Favorites')} />
+      <Item label="Mis reseñas" onPress={() => nav.navigate('MyReviews')} />
+      <Item label="Mis propuestas" onPress={() => nav.navigate('Submissions')} />
+      <Item label="Actividad reciente" onPress={() => nav.navigate('Activity')} />
+      {isStaff ? (<><SectionTitle title="Equipo" /><Item label="Moderación" onPress={() => nav.navigate('Moderation')} /></>) : null}
+      {isAdmin ? <Item label="Panel de administración" onPress={() => nav.navigate('Admin')} /> : null}
       <SectionTitle title="Cuenta" />
       <Item label="Ajustes" onPress={() => nav.navigate('Settings')} />
       <Button title="Cerrar sesión" variant="secondary" onPress={() => confirm('Cerrar sesión', '¿Querés salir de tu cuenta?', signOut, 'Salir')} />
@@ -101,7 +101,7 @@ export function SettingsScreen() {
       showError(new Error(`Tu cuenta se eliminará el ${new Date(r.deletionScheduledFor).toLocaleDateString('es-AR')}. Podés cancelarlo desde acá.`), 'Baja solicitada');
     } catch (e) { showError(e); }
   }, 'Continuar');
-  const test = async () => { setHealth('Probando…'); try { const r = await fetch(`${API_URL}/health`); setHealth(r.ok ? '✅ Conectado' : `⚠️ Respondió ${r.status}`); } catch { setHealth('❌ No se pudo conectar'); } };
+  const test = async () => { setHealth('Probando…'); try { const r = await fetch(`${API_URL}/health`); setHealth(r.ok ? 'Conectado' : `Respondió ${r.status}`); } catch { setHealth('No se pudo conectar'); } };
 
   return (
     <Screen>

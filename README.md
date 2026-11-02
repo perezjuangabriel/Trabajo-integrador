@@ -9,7 +9,7 @@ App móvil de reseñas de skate: spots, skateparks, productos y videos. Monorepo
 | `docs/` | `API.md`, `OAUTH.md`, `DATABASE.md`, `PROGRESS.md` (estado y contexto para continuar) |
 | `mobile/` | App Expo SDK 58 (React Native + TypeScript) |
 
-> **Estado:** Etapas 1–7 completas (backend 198 pruebas, app móvil con tipos y bundle verificados). La app **no se probó aún en un dispositivo** ni se generó el APK: ver `docs/EAS_APK.md` y la lista de pendientes en `docs/PROGRESS.md`.
+> **Estado:** Etapas 1–7 completas (backend 201 pruebas, app móvil con tipos y bundle verificados). La app **no se probó aún en un dispositivo** ni se generó el APK: ver `docs/EAS_APK.md` y la lista de pendientes en `docs/PROGRESS.md`.
 
 ## Abrir en VS Code
 `code spotcheck` (o *Archivo → Abrir carpeta*). Requisitos: **Node.js 20 o superior** y MySQL/MariaDB (XAMPP sirve).
@@ -19,7 +19,7 @@ npm run setup          # instala dependencias del backend
 cp backend/.env.example backend/.env     # y completar JWT_ACCESS_SECRET (mín. 32 caracteres)
 npm run db:seed        # crea la base y los datos de prueba (DESTRUCTIVO para la base `spotcheck`)
 npm run dev            # API en http://localhost:3000/api/v1/health
-npm test               # 198 pruebas (usa su propia base `spotcheck_test`)
+npm test               # 201 pruebas (usa su propia base `spotcheck_test`)
 ```
 
 ## Puesta en marcha local (XAMPP u otro MySQL/MariaDB)
@@ -38,7 +38,7 @@ Sin Node: importar a mano en phpMyAdmin `database/00_create_database.sql`, luego
 
 ## Pruebas
 ```bash
-cd backend && npm test      # recrea la base spotcheck_test y corre 198 pruebas
+cd backend && npm test      # recrea la base spotcheck_test y corre 201 pruebas
 ```
 Nunca toca `spotcheck` ni `MYSQL_URL` (salvaguarda: la base de pruebas debe terminar en `_test`). Para MySQL en otro puerto: `DB_PORT=3307 npm test`.
 
@@ -58,4 +58,4 @@ npm run typecheck && npm test
 OAuth con Google/GitHub/Discord requiere un build propio (esquema `spotcheck://`), no Expo Go.
 
 ## Documentación
-`docs/GUIA_INSTALACION.md` (entorno, variables, APK) · `docs/MANUAL_DE_USUARIO.md` (3 roles) · `docs/API.md` (endpoints) · `DATABASE.md` · `FEATURED_ALGORITHM.md` · `OAUTH.md` · `EAS_APK.md` · `DEPLOY_RAILWAY.md` · `PROGRESS.md`
+`docs/GUIA_INSTALACION.md` (entorno, variables, APK) · `docs/MANUAL_DE_USUARIO.md` (3 roles) · `docs/API.md` (endpoints) · `DATABASE.md` · `FEATURED_ALGORITHM.md` · `OAUTH.md` · `EAS_APK.md` · `DEPLOY_RENDER.md` · `PROGRESS.md`

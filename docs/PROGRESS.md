@@ -3,7 +3,7 @@
 > Si la conversación se corta, pegá este archivo completo en una conversación nueva junto con la consigna original.
 
 ## Decisiones del cliente
-- Hosting: **Railway** (backend + MySQL). Correo: **Resend**. Imágenes: **disco local del servidor** (volumen Railway, `UPLOADS_DIR`).
+- Hosting: **Render** (backend + web, plan gratuito) con **MySQL gratuito en Aiven** (cambio posterior a la decisión inicial de Railway, que cerró el registro de cuentas). Correo: **Resend**. Imágenes: **disco local del servidor** (en Render gratis es efímero, ver `DEPLOY_RENDER.md`).
 - Al eliminar cuenta: **se eliminan las reseñas**.
 - Panel admin dentro de la misma app móvil (rol admin), una sola base de código y un APK.
 
@@ -18,7 +18,7 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 - [x] **Etapa 4 — Reseñas, favoritos, reportes** (COMPLETA, 179/179 en MySQL 8 y MariaDB): reseñas con promedios transaccionales y bloqueo por entidad (verificado con prueba de mutación), fotos, premoderación, moderación de reseñas, favoritos idempotentes, reportes con resolución, actividad del usuario. (promedios en transacción), favoritos, reportes, moderación, subida de imágenes
 - [x] **Etapa 5 — Destacados, panel admin, auditoría, estadísticas** (COMPLETA; ver `FEATURED_ALGORITHM.md`)
 - [x] **Etapa 6 — App móvil** (completa: `tsc` limpio, 16 pruebas del cliente API, bundle Android Hermes OK con `expo export`). NO probada en dispositivo/emulador
-- [x] **Etapa 7 — Documentación**: `MANUAL_DE_USUARIO.md`, `DEPLOY_RAILWAY.md`, `EAS_APK.md`, `OAUTH.md`, README
+- [x] **Etapa 7 — Documentación**: `MANUAL_DE_USUARIO.md`, `DEPLOY_RENDER.md`, `EAS_APK.md`, `OAUTH.md`, README
 
 ## Entorno de pruebas (la sandbox se reinicia; hay que recrearlo)
 - Shell = `/bin/sh` (dash): NO usar expansión de llaves `{a,b}` en mkdir.
@@ -35,7 +35,7 @@ Backend (ESM, Node 22): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonw
 - Destacados automáticos: `score = (v/(v+m))·R + (m/(v+m))·C` (+ factor de actividad reciente), `m = featured_settings.min_reviews`, `C` = promedio global.
 
 ## Pendientes que dependen del cliente (no verificables desde la sandbox)
-APK con EAS Build (cuenta Expo), prueba en Android real, credenciales OAuth (Google/GitHub/Discord), API key de Resend y dominio, despliegue en Railway (+ volumen para `uploads`), video de demostración.
+APK con EAS Build (cuenta Expo), prueba en Android real, credenciales OAuth (Google/GitHub/Discord), API key de Resend y dominio, despliegue en Render + MySQL gratuito, video de demostración.
 
 ## Estructura del backend (Etapa 2)
 `src/`: `app.js` (fábrica, para supertest) · `server.js` · `config/{env,db}.js` · `middleware/{authenticate,validate,errorHandler,rateLimit}.js` (`authenticate`, `optionalAuthenticate`, `requireRole(...)`, `requireVerifiedEmail`, `requireSensitiveVerification`) · `routes/` · `controllers/` · `services/` (auth, oauth, oauthProviders, token, oneTimeCode, mail, accountDeletion, adminUser) · `repositories/` (todo el SQL; incluye `ratings.repo.js` con `recompute(kind,id,conn)` que la Etapa 4 debe reutilizar al crear/editar/borrar/ocultar reseñas) · `validators/` (zod) · `jobs/` (cron: purga de cuentas 03:15 UTC y de tokens 03:30 UTC) · `utils/`. `scripts/`: `db-setup`, `setup-lib`, `create-admin`. `tests/`: schema, auth, roles, oauth, oauthProviders, deletion.
@@ -75,4 +75,4 @@ OAuth real (Google/GitHub/Discord) y su prueba; `RESEND_API_KEY` + dominio verif
 
 
 ## Resultado final de pruebas
-Backend: 198/198 en MariaDB 10.11 y en MySQL 8.0.46. Móvil: 16/16. Sin verificar (requieren cuentas/dispositivo del cliente): APK EAS, prueba en teléfono real, OAuth real, Resend real, despliegue Railway, video demo.
+Backend: 198/201 en MariaDB 10.11 y en MySQL 8.0.46. Móvil: 16/16. Sin verificar (requieren cuentas/dispositivo del cliente): APK EAS, prueba en teléfono real, OAuth real, Resend real, despliegue Railway, video demo.

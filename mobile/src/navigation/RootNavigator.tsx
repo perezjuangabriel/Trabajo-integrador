@@ -1,5 +1,4 @@
 import React from 'react';
-import { Text } from 'react-native';
 import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -21,17 +20,16 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const PlacesTab = () => <CatalogScreen kind="place" />;
 const ProductsTab = () => <CatalogScreen kind="product" />;
 const VideosTab = () => <CatalogScreen kind="video" />;
-const icon = (e: string) => ({ focused }: { focused: boolean }) => <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.6 }}>{e}</Text>;
 
 function Tabs() {
   const { colors: c } = useTheme();
   return (
-    <Tab.Navigator screenOptions={{ headerShown: false, tabBarActiveTintColor: c.primary, tabBarInactiveTintColor: c.muted, tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.border } }}>
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio', tabBarIcon: icon('🏠'), tabBarAccessibilityLabel: 'Inicio' }} />
-      <Tab.Screen name="Places" component={PlacesTab} options={{ title: 'Spots', tabBarIcon: icon('📍'), tabBarAccessibilityLabel: 'Spots' }} />
-      <Tab.Screen name="Products" component={ProductsTab} options={{ title: 'Productos', tabBarIcon: icon('🛹'), tabBarAccessibilityLabel: 'Productos' }} />
-      <Tab.Screen name="Videos" component={VideosTab} options={{ title: 'Videos', tabBarIcon: icon('🎬'), tabBarAccessibilityLabel: 'Videos' }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil', tabBarIcon: icon('👤'), tabBarAccessibilityLabel: 'Perfil' }} />
+    <Tab.Navigator screenOptions={{ headerShown: false, tabBarIconStyle: { display: 'none' }, tabBarLabelStyle: { fontSize: 13, fontWeight: '700', paddingVertical: 10 }, tabBarActiveTintColor: c.primary, tabBarInactiveTintColor: c.muted, tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.border } }}>
+      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio', tabBarAccessibilityLabel: 'Inicio' }} />
+      <Tab.Screen name="Places" component={PlacesTab} options={{ title: 'Spots', tabBarAccessibilityLabel: 'Spots' }} />
+      <Tab.Screen name="Products" component={ProductsTab} options={{ title: 'Productos', tabBarAccessibilityLabel: 'Productos' }} />
+      <Tab.Screen name="Videos" component={VideosTab} options={{ title: 'Videos', tabBarAccessibilityLabel: 'Videos' }} />
+      <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Perfil', tabBarAccessibilityLabel: 'Perfil' }} />
     </Tab.Navigator>
   );
 }

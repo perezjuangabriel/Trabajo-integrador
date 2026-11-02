@@ -19,7 +19,7 @@ export function ContentCard({ kind, item, onPress, showStatus, wide }: { kind: K
   return (
     <Card onPress={onPress}>
       {uri ? <Image source={{ uri }} style={s.img} contentFit="cover" transition={150} accessibilityLabel={cardTitle(item)} />
-        : <View style={[s.img, { alignItems: 'center', justifyContent: 'center' }]}><Title size={36}>{kind === 'place' ? '📍' : kind === 'product' ? '🛹' : '🎬'}</Title></View>}
+        : <View style={[s.img, { alignItems: 'center', justifyContent: 'center' }]}><Title size={16}>{kind === 'place' ? 'Spot' : kind === 'product' ? 'Producto' : 'Video'}</Title></View>}
       <View style={s.body}>
         <Title size={16}>{cardTitle(item)}</Title>
         <Muted>{sub}</Muted>

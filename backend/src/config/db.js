@@ -10,8 +10,11 @@ const common = {
   decimalNumbers: true,
 };
 
+// shortcut: sin DB_SSL_CA el canal va cifrado pero no se verifica la identidad del servidor; cargar el CA del proveedor para verificarla.
+const ssl = env.DB_SSL === 'true' ? { ssl: env.DB_SSL_CA ? { ca: env.DB_SSL_CA } : { rejectUnauthorized: false } } : {};
+
 export function buildConnectionConfig({ withDatabase = true } = {}) {
-  if (databaseUrl) return { uri: databaseUrl, ...common };
+  if (databaseUrl) return { uri: databaseUrl, ...common, ...ssl };
   return {
     host: env.DB_HOST,
     port: env.DB_PORT,
@@ -19,6 +22,7 @@ export function buildConnectionConfig({ withDatabase = true } = {}) {
     password: env.DB_PASSWORD,
     ...(withDatabase ? { database: env.DB_NAME } : {}),
     ...common,
+    ...ssl,
   };
 }
 

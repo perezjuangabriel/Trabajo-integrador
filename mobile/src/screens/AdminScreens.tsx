@@ -106,7 +106,7 @@ export function AdminFeaturedScreen() {
   const picker = usePaginated((p) => (picking ? catalogApi.list(picking, { page: p, pageSize: 20, sort: 'rating' }) : Promise.resolve({ items: [], page: 1, pageSize: 20, total: 0, totalPages: 1 })), [picking]);
   const run = (fn: () => Promise<unknown>) => fn().then(st.reload).catch((e) => showError(e));
   const num = async (slot: Kind, field: 'periodHours' | 'minReviews' | 'recencyDays', label: string) => { const v = await prompt.ask(label, 'Número entero'); const n = Number(v); if (v && Number.isInteger(n)) run(() => adminApi.featuredSettings(slot, { [field]: n })); else if (v) showError(new Error('Ingresá un número entero'), 'Valor inválido'); };
-  const names = { video: '🎬 Video de la semana', product: '🛹 Producto destacado', place: '📍 Spot destacado' } as const;
+  const names = { video: 'Video de la semana', product: 'Producto destacado', place: 'Spot destacado' } as const;
   return (
     <AdminOnly><Screen>
       {prompt.element}

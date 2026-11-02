@@ -9,7 +9,7 @@ const server = app.listen(env.PORT, () => {
   startJobs();
 });
 
-// Cierre ordenado (Railway envía SIGTERM al redeployar).
+// Cierre ordenado (Render envía SIGTERM al redeployar).
 for (const sig of ['SIGTERM', 'SIGINT']) {
   process.on(sig, () => server.close(async () => { await pool.end(); process.exit(0); }));
 }

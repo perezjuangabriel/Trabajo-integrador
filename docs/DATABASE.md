@@ -29,7 +29,7 @@ Destacados/config: `featured_settings`, `featured_content`, `app_settings`.
 - Lugares/productos/videos: baja lógica (`deleted_at`) + `status`. Usuarios: `status` y anonimización.
 - Reseña propia: baja **física** (permite reseñar de nuevo); ocultar por moderación = `status='hidden'`.
 - Eliminación de cuenta (decisión del cliente): se **eliminan sus reseñas**, favoritos y tokens (`ON DELETE CASCADE`); lo que propuso queda con `submitted_by = NULL`. Período de gracia configurable (`account_deletion_grace_days`).
-- Imágenes: en la BD solo URL y metadatos; los archivos van al disco del servidor (volumen en Railway).
+- Imágenes: en la BD solo URL y metadatos; los archivos van al disco del servidor (carpeta `UPLOADS_DIR`; efímera en Render gratis).
 
 ## Verificación
 `npm test` en `/backend` recrea una base aparte (`spotcheck_test`, con salvaguarda: el nombre debe terminar en `_test` y se ignora `MYSQL_URL`) y ejecuta 137 pruebas distribuidas en 12 archivos (esquema, autenticación, roles, OAuth, baja de cuenta, adaptadores de proveedor, catálogos de apoyo, lugares, productos, videos, moderación e imágenes).
