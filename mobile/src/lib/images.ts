@@ -16,6 +16,10 @@ export async function pickImages(max = 1): Promise<LocalImage[]> {
 export async function toForm(img: LocalImage): Promise<FormData> {
   const f = new FormData();
   if (Platform.OS === 'web') f.append('image', await (await fetch(img.uri)).blob(), img.name);
-  else f.append('image', { uri: img.uri, name: img.name, type: img.type } as unknown as Blob);
+  else {
+    // En el celular se lee el archivo a un Blob real: el formato antiguo `{uri,name,type}` falla con "Network request failed" en algunos equipos.
+    try { f.append('image', (await (await fetch(img.uri)).blob()) as unknown as Blob, img.name); }
+    catch { f.append('image', { uri: img.uri, name: img.name, type: img.type } as unknown as Blob); }
+  }
   return f;
 }

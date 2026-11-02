@@ -52,7 +52,7 @@ export function createApiClient(cfg: {
       return await doFetch(`${cfg.baseUrl}${path}${buildQuery(opts.query)}`, { method, headers, body, signal: ctrl.signal });
     } catch (e) {
       if ((e as Error).name === 'AbortError') throw new ApiError(0, 'TIMEOUT', 'El servidor tardó demasiado en responder');
-      throw new ApiError(0, 'NETWORK', 'No hay conexión con el servidor. Revisá tu internet e intentá de nuevo.');
+      throw new ApiError(0, 'NETWORK', `No hay conexión con el servidor (${(e as Error).message}). Revisá tu internet e intentá de nuevo.`);
     } finally { clearTimeout(timer); }
   }
 
