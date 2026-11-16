@@ -9,7 +9,7 @@ const resolveAppRedirect = (requested) => {
   if (!target || !oauth.allowedAppRedirect(target)) throw badRequest('INVALID_APP_REDIRECT', 'app_redirect no permitido');
   return target;
 };
-const backToApp = (res, appRedirect, params) => {
+const backToApp = (res, appRedirect, params: Record<string, string>) => {
   const url = new URL(appRedirect);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
   res.redirect(302, url.toString());

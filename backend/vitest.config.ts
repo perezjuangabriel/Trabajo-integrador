@@ -13,5 +13,5 @@ process.env.UPLOADS_DIR = '/tmp/spotcheck-test-uploads';
 for (const k of ['RESEND_API_KEY', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET']) delete process.env[k];
 
 export default defineConfig({
-  test: { environment: 'node', globalSetup: ['./tests/globalSetup.js'], fileParallelism: false, testTimeout: 20000 },
+  test: { environment: 'node', globalSetup: ['./tests/globalSetup.ts'], fileParallelism: false, testTimeout: 20000 },
 });

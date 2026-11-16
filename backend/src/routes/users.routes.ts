@@ -18,7 +18,7 @@ export const createUsersRouter = () => {
   r.get('/me/linked-accounts', c.linkedAccounts);
   r.get('/me/submissions', validate(submissionsSchema), m.mySubmissions);
   r.get('/me/reviews', validate(myReviewsSchema), reviewsC.mine);
-  r.get('/me/activity', validate({ query: pagination }), async (req, res) => res.json({ data: await activity.list(req.user, req.valid.query) }));
+  r.get('/me/activity', validate({ query: pagination }), async (req: any, res) => res.json({ data: await activity.list(req.user, req.valid.query) }));
   // Baja de cuenta: contraseña (si tiene) + verificación adicional por correo.
   r.post('/me/deletion-request', requireSensitiveVerification, validate(v.deletionSchema), c.requestDeletion);
   r.post('/me/deletion-cancel', c.cancelDeletion);

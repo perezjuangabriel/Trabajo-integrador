@@ -31,6 +31,15 @@ export function parseVideoUrl(raw) {
     if (m) return { url: `https://vimeo.com/${m[1]}`, provider: 'vimeo', externalId: m[1], thumbnailUrl: null, embedUrl: `https://player.vimeo.com/video/${m[1]}` };
   }
 
+  if (host === 'instagram.com' || host === 'www.instagram.com') {
+    // /reel/CODE, /reels/CODE, /p/CODE, /tv/CODE y la variante con usuario (/usuario/reel/CODE)
+    const m = u.pathname.match(/^\/(?:[A-Za-z0-9._]+\/)?(reels?|p|tv)\/([A-Za-z0-9_-]{5,20})(?:\/|$)/);
+    if (m) {
+      const id = `${m[1] === 'reels' ? 'reel' : m[1]}/${m[2]}`;
+      return { url: `https://www.instagram.com/${id}/`, provider: 'instagram', externalId: id, thumbnailUrl: null, embedUrl: `https://www.instagram.com/${id}/embed` };
+    }
+  }
+
   u.hash = '';
   return { url: u.toString(), provider: 'other', externalId: null, thumbnailUrl: null, embedUrl: null };
 }
@@ -38,4 +47,5 @@ export function parseVideoUrl(raw) {
 /** Reconstruye el embed desde lo guardado (la BD no lo almacena). */
 export const embedUrlFor = (provider, externalId) =>
   provider === 'youtube' && externalId ? `https://www.youtube.com/embed/${externalId}`
-  : provider === 'vimeo' && externalId ? `https://player.vimeo.com/video/${externalId}` : null;
+  : provider === 'vimeo' && externalId ? `https://player.vimeo.com/video/${externalId}`
+  : provider === 'instagram' && externalId && /^(reel|p|tv)\/[A-Za-z0-9_-]{5,20}$/.test(externalId) ? `https://www.instagram.com/${externalId}/embed` : null;

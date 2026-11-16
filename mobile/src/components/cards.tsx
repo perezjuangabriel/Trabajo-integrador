@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Card, Muted, Pill, RatingLine, Row, STATUS_PILL, Title, fmtMoney, useStyles } from './ui';
 import { useTheme } from '../theme/ThemeContext';
 import { radius } from '../theme/colors';
+import { PROVIDER_LABEL } from '../lib/embed';
 import type { AnyCard, Kind, PlaceCard, ProductCard, VideoCard } from '../types';
 
 const isVideo = (c: AnyCard): c is VideoCard => 'title' in c;
@@ -14,7 +15,7 @@ const KIND_LABEL: Record<Kind, string> = { place: 'Spot', product: 'Producto', v
 function subtitle(kind: Kind, item: AnyCard) {
   if (kind === 'place') { const p = item as PlaceCard; return `${p.city?.name ?? ''}${p.zone ? ` · ${p.zone}` : ''}`; }
   if (kind === 'product') return (item as ProductCard).brand?.name ?? '';
-  const v = item as VideoCard; return v.provider === 'other' ? 'Enlace externo' : v.provider ?? '';
+  const v = item as VideoCard; return PROVIDER_LABEL[v.provider] ?? '';
 }
 const imageOf = (item: AnyCard) => (isVideo(item) ? item.thumbnailUrl : (item as PlaceCard | ProductCard).coverUrl);
 

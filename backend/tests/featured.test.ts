@@ -65,7 +65,7 @@ describe('selección automática persistida', () => {
     const r1 = (await api().post(`${A}/featured/place/refresh`).set(admin)).body.data.slot.current;
     const r2 = (await api().post(`${A}/featured/place/refresh`).set(admin)).body.data.slot.current;
     expect(r1.targetId).not.toBe(r2.targetId);
-    const hours = (new Date(r2.endsAt) - new Date(r2.startsAt)) / 3_600_000;
+    const hours = (new Date(r2.endsAt).getTime() - new Date(r2.startsAt).getTime()) / 3_600_000;
     expect(hours).toBeCloseTo(6, 1);
     expect((await current('place'))).toHaveLength(1);
   });
@@ -134,7 +134,7 @@ describe('selección manual', () => {
     await settings(admin, 'video', { mode: 'automatic', periodHours: 168, minReviews: 1 });
     const r = await api().post(`${A}/featured/video/refresh`).set(admin);
     expect(r.body.data.slot.current).toMatchObject({ selection: 'automatic', status: 'valid' });
-    expect((new Date(r.body.data.slot.current.endsAt) - new Date(r.body.data.slot.current.startsAt)) / 3_600_000).toBeCloseTo(168, 0);
+    expect((new Date(r.body.data.slot.current.endsAt).getTime() - new Date(r.body.data.slot.current.startsAt).getTime()) / 3_600_000).toBeCloseTo(168, 0);
   });
 });
 

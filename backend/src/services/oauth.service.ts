@@ -28,7 +28,7 @@ export function signState(payload) {
 }
 export function verifyState(state, provider) {
   try {
-    const p = jwt.verify(state, env.JWT_ACCESS_SECRET, { issuer: 'spotcheck-api' });
+    const p = jwt.verify(state, env.JWT_ACCESS_SECRET, { issuer: 'spotcheck-api' }) as any;
     if (p.typ !== 'oauth_state' || p.p !== provider) throw new Error('state mismatch');
     return p;
   } catch {

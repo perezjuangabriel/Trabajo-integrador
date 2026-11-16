@@ -70,3 +70,37 @@ describe('API de videos', () => {
     expect(nu).toBeTruthy();
   });
 });
+
+describe('portada propia (ej. Instagram)', () => {
+  it('guarda una portada https, rechaza una insegura y permite quitarla', async () => {
+    const admin = await staffAuth('admin');
+    const ig = `https://www.instagram.com/reel/${vid()}/`;
+    const r = await api().post(V).set(admin).send(body({ url: ig, thumbnailUrl: 'https://example.com/portada.jpg' }));
+    expect(r.status).toBe(201);
+    expect(r.body.data.video.thumbnailUrl).toBe('https://example.com/portada.jpg');
+    expect((await api().post(V).set(admin).send(body({ url: `${ig}x/`, thumbnailUrl: 'http://example.com/a.jpg' }))).status).toBe(400);
+    const u = await api().patch(`${V}/${r.body.data.video.id}`).set(admin).send({ thumbnailUrl: null });
+    expect(u.status).toBe(200);
+    expect(u.body.data.video.thumbnailUrl).toBeNull();
+  });
+});
+
+describe('Instagram', () => {
+  it('reconoce reels, posts y la variante con usuario, y arma el embed', () => {
+    for (const u of ['https://www.instagram.com/reel/Cabc_123-xY/?igsh=zzz', 'https://instagram.com/reels/Cabc_123-xY', 'https://www.instagram.com/usuario.x/reel/Cabc_123-xY/']) {
+      expect(parseVideoUrl(u)).toMatchObject({ provider: 'instagram', externalId: 'reel/Cabc_123-xY', url: 'https://www.instagram.com/reel/Cabc_123-xY/', embedUrl: 'https://www.instagram.com/reel/Cabc_123-xY/embed', thumbnailUrl: null });
+    }
+    expect(parseVideoUrl('https://www.instagram.com/p/Dxyz12345/')).toMatchObject({ provider: 'instagram', externalId: 'p/Dxyz12345' });
+    expect(parseVideoUrl('https://www.instagram.com/usuario/')).toMatchObject({ provider: 'other', embedUrl: null }); // perfil: no es un video
+    expect(embedUrlFor('instagram', '../../evil')).toBeNull();
+  });
+  it('se guarda por la API con embed y se detecta el duplicado aunque cambie el formato', async () => {
+    const admin = await staffAuth('admin');
+    const code = vid();
+    const r = await api().post(V).set(admin).send(body({ url: `https://www.instagram.com/reel/${code}/?igsh=1` }));
+    expect(r.status).toBe(201);
+    expect(r.body.data.video).toMatchObject({ provider: 'instagram', embedUrl: `https://www.instagram.com/reel/${code}/embed` });
+    const dup = await api().post(V).set(admin).send(body({ url: `https://www.instagram.com/usuario/reel/${code}/` }));
+    expect(dup.body.error.code).toBe('VIDEO_ALREADY_EXISTS');
+  });
+});

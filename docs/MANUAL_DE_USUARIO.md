@@ -60,6 +60,7 @@ La barra inferior tiene cinco pestañas:
 | **Perfil** | Tu cuenta, actividad y ajustes |
 
 - Tocá una tarjeta para abrir su **detalle**; volvé con la flecha del encabezado o el gesto "atrás" del teléfono.
+- **En el navegador (versión web)** cada pantalla tiene su propia dirección (`/spots`, `/productos`, `/videos`, `/ver/place/9`…): los botones **Atrás** y **Adelante** del navegador funcionan, recargar la página te deja en el mismo lugar y podés copiar y compartir el enlace de un spot, producto o video. En pantallas grandes el contenido se centra con un ancho máximo y las listas se muestran en dos columnas.
 - Deslizá hacia abajo en una lista para **actualizarla**; al llegar al final se cargan más resultados.
 - *Reseña*, *Reportar*, *Iniciar sesión* y *Crear cuenta* se abren como ventanas modales.
 - **Tema:** Perfil → **Ajustes y apariencia** → **Apariencia**: *Sistema*, *Claro* u *Oscuro*. Se recuerda en el teléfono y, si tenés sesión, en tu cuenta.
@@ -67,8 +68,12 @@ La barra inferior tiene cinco pestañas:
 ## 4. Explorar: spots, productos y videos
 
 ### 4.1 Inicio
-- **Video de la semana**, **Producto destacado** y **Spot destacado**: son iguales para todos los usuarios mientras dura su vigencia. Los elige un administrador o el algoritmo automático (ver `FEATURED_ALGORITHM.md`).
-- **Spots populares**, **Productos populares** y **Reseñas recientes**.
+- **Portada (hero):** una tarjeta grande con el **Video de la semana**, con botón de reproducir, título y puntuación. Si no hay video destacado, muestra el **Spot destacado**; si tampoco hay, no hay portada. Al tocarla se abre el detalle.
+- **Accesos rápidos:** Spots, Productos, Videos y Favoritos.
+- **Spots destacados** y **Productos destacados:** carruseles horizontales. El destacado va primero, marcado con la etiqueta *Destacado*, seguido de los más populares.
+- **Reseñas recientes.**
+- Los destacados son iguales para todos los usuarios mientras dura su vigencia. Los elige un administrador o el algoritmo automático (ver `FEATURED_ALGORITHM.md`).
+- Las tarjetas muestran la foto con proporción fija, la categoría como etiqueta sobre la imagen, el título, el dato clave y la puntuación. Los videos llevan un botón de reproducir.
 
 ### 4.2 Listas, búsqueda y filtros
 En **Spots**, **Productos** y **Videos**:
@@ -80,7 +85,7 @@ En **Spots**, **Productos** y **Videos**:
 ### 4.3 Detalle
 - **Spot:** fotos, ubicación (**Ver en el mapa**), horarios, superficie, obstáculos, servicios y reseñas.
 - **Producto:** fotos, marca, precio orientativo y especificaciones. El precio es solo informativo: no se vende nada en la app.
-- **Video:** reproductor o enlace al sitio original (algunos proveedores no permiten reproducir dentro de la app) y reseñas.
+- **Video:** reproductor integrado para YouTube, Vimeo e Instagram (reels y posts públicos) o enlace al sitio original para otros sitios, y reseñas. La miniatura se genera sola con YouTube; con Instagram y otros enlaces podés indicar una portada (URL de una imagen) al proponer el video, o la tarjeta muestra un recuadro liso.
 - Todos muestran el **promedio de estrellas**, la distribución por puntuación y las reseñas (**Ver más reseñas** carga más).
 
 ## 5. Reseñar, guardar favoritos y reportar
@@ -88,7 +93,7 @@ En **Spots**, **Productos** y **Videos**:
 ### 5.1 Escribir una reseña
 1. En el detalle, tocá el botón de reseña (requiere sesión y correo verificado).
 2. Elegí la **Puntuación** (1 a 5 estrellas) y escribí el **Comentario** (entre 3 y 2000 caracteres).
-3. Podés **Agregar fotos** (hasta 4; JPEG, PNG o WebP de hasta 5 MB). Las reseñas de videos no llevan fotos.
+3. Podés **Agregar fotos** (hasta 4; JPEG, PNG o WebP de hasta 5 MB) o **Agregar por enlace** pegando una URL https de una foto. Las reseñas de videos no llevan fotos.
 4. Enviá. Tenés **una reseña por elemento**; podés **Editarla** o **Eliminarla** y volver a reseñar.
 
 Si la moderación previa de reseñas está activa, tu reseña queda **pendiente** hasta que un moderador la apruebe. Solo las reseñas visibles cuentan en el promedio.
@@ -106,7 +111,8 @@ Desde las pestañas **Spots**, **Productos** o **Videos**, el botón de agregar 
 - **Producto:** nombre, marca, categoría, precio orientativo (opcional), especificaciones (**Agregar especificación**) y descripción.
 - **Video:** título, enlace (YouTube, Vimeo u otro `http(s)`), categoría y descripción.
 
-Después podés **Agregar fotos** (spots y productos).
+Después podés **Agregar fotos** (archivo JPEG, PNG o WebP de hasta 5 MB) o **Agregar por enlace** (spots, productos y fotos de reseñas): pegás la dirección `https://…` de una imagen pública (hasta 500 caracteres, sin usuario ni contraseña). Hasta 8 fotos por spot o producto y 4 por reseña. De un enlace solo se guarda la dirección: no se descarga ni se comprueba que sea una imagen, y si el sitio de origen la borra, la foto desaparece. Las fotos subidas como archivo se guardan en el disco del servidor, que en el plan gratuito de Render se **borra al reiniciar**; las de enlace no se pierden.
+Los videos no admiten archivos: solo el enlace.
 Tu propuesta queda **pendiente** hasta que la revise un moderador. Seguila en Perfil → **Mis propuestas**, donde ves su estado: *pendiente*, *publicada*, *rechazada* (con el motivo) u *oculta*. Podés editarla o eliminarla mientras no esté publicada; si corregís una rechazada vuelve a revisión. Hay un máximo de 10 propuestas pendientes por tipo.
 
 ## 7. Tu perfil y tus ajustes
@@ -147,14 +153,14 @@ Los administradores tienen todo lo anterior y Perfil → **Panel de administraci
 |---|---|
 | **Panel** | Estadísticas: usuarios, contenido por estado, reseñas, reportes abiertos, pendientes y actividad de los últimos 14 días |
 | **Usuarios y roles** | Buscar usuarios; asignar rol *usuario* o *moderador*; **suspender** (con motivo; cierra sus sesiones al instante) y **reactivar** |
-| **Catálogos** | Gestionar categorías, marcas, ciudades, superficies, obstáculos y servicios; baja y restauración de contenido |
+| **Catálogos** | Crear, renombrar y dar de baja **categorías** (por tipo: spots, productos, videos), **marcas** y **ciudades**. Las superficies, obstáculos y servicios, y la restauración de contenido dado de baja, existen en la API pero **no tienen pantalla** en la app todavía. En una base nueva, el servidor carga al arrancar un catálogo inicial (categorías, superficies, obstáculos y servicios) solo si la tabla está vacía; lo que luego se borre no vuelve |
 | **Destacados** | Para cada ranura (video, producto, spot): modo **manual** (elegís el contenido exacto) o **automático** (elige el algoritmo cada cierto período); períodos, mínimo de reseñas y recencia; refrescar |
 | **Configuración** | Moderación previa de propuestas y de reseñas, días de gracia para bajas de cuenta |
 | **Auditoría** | Quién hizo qué, sobre qué y cuándo (con IP) |
 
 Notas de seguridad:
 - Las acciones sensibles pueden pedir un **código de verificación por correo** válido 5 minutos.
-- **El rol de administrador no se asigna desde la app.** Se crea por consola en el servidor (`npm run create-admin`, ver `GUIA_INSTALACION.md`).
+- **El rol de administrador no se asigna desde la app.** Se crea por consola en el servidor (`npm run create-admin`, ver `GUIA_INSTALACION.md`). Con la variable `ADMIN_ROLE` el mismo script también crea cuentas de *moderador* o *usuario* con el correo ya verificado (útil para demostraciones).
 - Un administrador no puede cambiar su propio rol ni el de otro administrador.
 - Si un contenido destacado deja de ser público, el panel lo marca como *no disponible* y la Home lo omite; elegí otro.
 
@@ -167,7 +173,9 @@ Notas de seguridad:
 | "Necesitás verificar tu correo para publicar" | Verificá tu correo desde el aviso del Perfil e ingresá el código |
 | Cuenta bloqueada | Esperá unos minutos (se desbloquea sola) o usá *Olvidé mi contraseña* |
 | Cuenta suspendida | Un administrador la suspendió; contactalo |
-| No puedo subir una foto | Debe ser JPEG, PNG o WebP de hasta 5 MB (máx. 4 en reseñas) |
+| No puedo subir una foto | Debe ser JPEG, PNG o WebP de hasta 5 MB (máx. 4 en reseñas). Si usás un enlace, tiene que empezar con `https://` y apuntar a un sitio público (no se aceptan `http://`, `localhost` ni direcciones IP) |
+| El selector de categoría está vacío | Un administrador debe crear categorías (o aplicar la última versión del servidor, que carga el catálogo inicial si no hay ninguna). La categoría es obligatoria al proponer |
+| El video destacado no aparece en el Inicio | Debe estar **publicado** y elegido en Administración → Destacados (modo manual). En modo automático necesita al menos 2 reseñas en los últimos 30 días |
 | No veo mi propuesta en la lista pública | Sigue *pendiente*; mirá su estado en **Mis propuestas** |
 | "Demasiadas solicitudes" | Esperá unos minutos y reintentá |
 | El video no se reproduce dentro de la app | El proveedor no permite embeberlo; abrilo con el enlace al sitio original |

@@ -328,7 +328,7 @@ CREATE TABLE videos (
   title          VARCHAR(160)    NOT NULL,
   description    TEXT            NULL,
   url            VARCHAR(500)    NOT NULL COMMENT 'Enlace original',
-  provider       ENUM('youtube','vimeo','other') NOT NULL DEFAULT 'other',
+  provider       ENUM('youtube','vimeo','instagram','other') NOT NULL DEFAULT 'other',
   external_id    VARCHAR(64)     NULL COMMENT 'ID en el proveedor; permite embeber',
   thumbnail_url  VARCHAR(500)    NULL,
   category_id    INT UNSIGNED    NOT NULL,

@@ -20,7 +20,7 @@ export interface ProductCard {
   coverUrl: string | null; avgRating: number; reviewCount: number; publishedAt: string | null; rejectionReason?: string;
 }
 export interface VideoCard {
-  id: number; title: string; url: string; provider: 'youtube' | 'vimeo' | 'other'; embedUrl: string | null; thumbnailUrl: string | null;
+  id: number; title: string; url: string; provider: 'youtube' | 'vimeo' | 'instagram' | 'other'; embedUrl: string | null; thumbnailUrl: string | null;
   category: Ref; status: Status; avgRating: number; reviewCount: number; publishedAt: string | null; rejectionReason?: string;
 }
 export type AnyCard = PlaceCard | ProductCard | VideoCard;

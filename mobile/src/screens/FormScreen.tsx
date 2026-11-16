@@ -60,7 +60,7 @@ export function FormScreen() {
   const [f, setF] = useState({
     name: '', description: '', categoryId: null as number | null, extraCats: [] as number[], cityId: null as number | null, newCity: false, cityName: '', cityRegion: '',
     zone: '', address: '', lat: '', lng: '', surfaceId: null as number | null, obstacles: [] as number[], amenities: [] as number[], days: [] as number[], opens: '10:00', closes: '20:00',
-    brandId: null as number | null, price: '', currency: 'ARS', specs: [] as { key: string; value: string }[], url: '',
+    brandId: null as number | null, price: '', currency: 'ARS', specs: [] as { key: string; value: string }[], url: '', thumb: '',
   });
   const set = (p: Partial<typeof f>) => setF((x) => ({ ...x, ...p }));
   const [imgs, setImgs] = useState<Img[]>([]); const [added, setAdded] = useState<LocalImage[]>([]); const [removed, setRemoved] = useState<Img[]>([]);
@@ -72,7 +72,7 @@ export function FormScreen() {
       lat: d.latitude != null ? String(d.latitude) : '', lng: d.longitude != null ? String(d.longitude) : '', surfaceId: d.surfaceType?.id ?? null, obstacles: d.obstacles.map((x) => x.id), amenities: d.amenities.map((x) => x.id),
       days: d.hours.map((h) => h.weekday), opens: d.hours[0]?.opensAt ?? '10:00', closes: d.hours[0]?.closesAt ?? '20:00' });
     if (kind === 'product') set({ name: d.name, description: d.description ?? '', categoryId: d.category.id, brandId: d.brand.id, price: d.price ? String(d.price.amount) : '', currency: d.price?.currency ?? 'ARS', specs: d.specs });
-    if (kind === 'video') set({ name: d.title, description: d.description ?? '', categoryId: d.category.id, url: d.url });
+    if (kind === 'video') set({ name: d.title, description: d.description ?? '', categoryId: d.category.id, url: d.url, thumb: d.provider === 'other' ? d.thumbnailUrl ?? '' : '' });
     if (kind !== 'video') setImgs(d.images);
   }, [existing.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -85,6 +85,7 @@ export function FormScreen() {
     brand: kind !== 'product' || f.brandId ? null : 'Elegí una marca',
     price: kind !== 'product' || f.price === '' || (toNumber(f.price) ?? -1) >= 0 ? null : 'Precio inválido',
     url: kind !== 'video' ? null : isUrl(f.url) ? null : 'Ingresá un enlace http(s) válido',
+    thumb: kind !== 'video' || !f.thumb.trim() || /^https:\/\//i.test(f.thumb.trim()) ? null : 'La portada debe empezar con https://',
   };
   const invalid = Object.values(errors).some(Boolean);
 
@@ -102,7 +103,7 @@ export function FormScreen() {
           ...(f.newCity ? { newCity: { name: f.cityName.trim(), ...(f.cityRegion.trim() ? { region: f.cityRegion.trim() } : {}) } } : { cityId: f.cityId }) };
       } else if (kind === 'product') {
         body = { name: f.name.trim(), description: desc, brandId: f.brandId, categoryId: f.categoryId, price: f.price === '' ? null : { amount: toNumber(f.price), currency: f.currency.trim().toUpperCase() }, specs: f.specs.filter((s) => s.key.trim() && s.value.trim()) };
-      } else body = { title: f.name.trim(), description: desc, url: f.url.trim(), categoryId: f.categoryId };
+      } else body = { title: f.name.trim(), description: desc, url: f.url.trim(), categoryId: f.categoryId, thumbnailUrl: f.thumb.trim() || null };
 
       const saved = edit ? await catalogApi.update(kind, id!, body) : await catalogApi.create(kind, body);
       let failed = 0; let why = '';
@@ -129,6 +130,7 @@ export function FormScreen() {
       {!isStaff && !edit ? <Muted>Tu propuesta la revisa el equipo de moderación antes de publicarse.</Muted> : null}
       <Input label={kind === 'video' ? 'Título' : 'Nombre'} value={f.name} onChangeText={(v) => set({ name: v })} error={E('name')} maxLength={kind === 'video' ? 160 : 120} />
       {kind === 'video' ? <Input label="Enlace del video" value={f.url} onChangeText={(v) => set({ url: v })} autoCapitalize="none" keyboardType="url" error={E('url')} hint="YouTube, Vimeo u otro sitio. Se reproduce dentro de la app solo si el proveedor lo permite." /> : null}
+      {kind === 'video' ? <Input label="Portada (opcional)" value={f.thumb} onChangeText={(v) => set({ thumb: v })} autoCapitalize="none" keyboardType="url" error={E('thumb')} hint="URL https de una imagen. Útil para Instagram, que no entrega miniatura. YouTube usa la suya." /> : null}
       <Select label="Categoría" value={f.categoryId} options={catOptions} onChange={(v) => set({ categoryId: v })} />
       {E('category') ? <Muted>{E('category')}</Muted> : null}
       {kind === 'product' ? (<><Select label="Marca" value={f.brandId} options={lookup(brands.data?.items)} onChange={(v) => set({ brandId: v })} />{E('brand') ? <Muted>{E('brand')}</Muted> : null}

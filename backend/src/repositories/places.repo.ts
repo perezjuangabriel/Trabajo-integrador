@@ -78,7 +78,7 @@ export async function updateFields(id, d, db = pool) {
 
 // Reemplaza solo las colecciones que vienen en la petición (undefined = no tocar).
 export async function replaceChildren(id, d, db = pool) {
-  const swap = async (table, col, values, build) => {
+  const swap = async (table, col, values, build?) => {
     if (values === undefined) return;
     await db.query(`DELETE FROM ${table} WHERE place_id = ?`, [id]);
     if (values.length) await db.query(`INSERT INTO ${table} (place_id, ${col}) VALUES ?`, [values.map((v) => [id, v])]);

@@ -16,7 +16,7 @@ describe.each(['place', 'product', 'video'])('reseñas de %s: alta y promedios',
     expect((await post(kind, id, asUser((await registerUser()).accessToken))).body.error.code).toBe('EMAIL_NOT_VERIFIED');
     const { auth } = await verifiedUser();
     for (const bad of [{ rating: 0, comment: 'abcd' }, { rating: 6, comment: 'abcd' }, { rating: 3.5, comment: 'abcd' }, { rating: '4', comment: 'abcd' }, { rating: 4, comment: 'ab' }, { rating: 4, comment: '   ' }, { rating: 4, comment: 'abcd', status: 'visible' }]) {
-      expect((await post(kind, id, auth, bad)).status).toBe(400);
+      expect((await post(kind, id, auth, bad as any)).status).toBe(400);
     }
   });
   it('crea la reseña, recalcula el promedio y no permite una segunda del mismo usuario', async () => {

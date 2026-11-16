@@ -65,3 +65,7 @@ En desarrollo con Expo Go, agregar también la URL `exp://…` que muestra la ap
 | Google | ✔ | ✔ | ⏳ pendiente de credenciales |
 | GitHub | ✔ | ✔ | ⏳ pendiente de credenciales |
 | Discord | ✔ | ✔ | ⏳ pendiente de credenciales |
+
+## Login social en la versión web
+- Agregar la dirección de la web a `OAUTH_APP_REDIRECTS`, separada por coma: `spotcheck://auth,https://TU-APP.onrender.com/auth`.
+- El servidor **no debe** enviar la cabecera `Cross-Origin-Opener-Policy: same-origin`: corta el vínculo entre la pestaña y la ventana de login y la web no puede completar el inicio de sesión (verificado con un navegador automatizado y un proveedor simulado; hay una prueba que lo vigila). Verificado solo con proveedor simulado, no con los reales.

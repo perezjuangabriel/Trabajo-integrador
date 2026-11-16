@@ -28,6 +28,9 @@ curl -X POST $B/places/1/reviews -H "Authorization: Bearer $TOKEN" \
 
 # 5) Subir una foto (multipart, campo "image")
 curl -X POST $B/places/1/images -H "Authorization: Bearer $TOKEN" -F image=@foto.jpg
+
+# 6) ...o guardar una foto por enlace (solo se guarda la URL; no se descarga)
+curl -X POST $B/places/1/images -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -d '{"url":"https://sitio.com/foto.jpg"}'
 ```
 **Ciclo de sesión.** El `accessToken` (JWT) dura 15 min. Ante `401 TOKEN_EXPIRED`, llamá a `POST /auth/refresh {refreshToken}`: devuelve un par nuevo y el refresh anterior queda revocado (rotación). Reutilizar un refresh ya rotado (`REFRESH_REUSED`) revoca toda la sesión de ese dispositivo. La app móvil lo hace sola, con una única renovación simultánea.
 
@@ -153,8 +156,9 @@ La moderación de altas de usuarios comunes es configurable (`require_moderation
 | `PATCH /places/:id` | autor/staff | Mismos campos, todos opcionales; las listas enviadas **reemplazan** a las anteriores |
 | `DELETE /places/:id` | autor/admin | 204. Baja lógica. `409 NOT_DELETABLE` si el autor intenta borrar lo ya publicado |
 | `POST /places/:id/restore` | admin | 204 |
-| `POST /places/:id/images` | autor/staff | `multipart/form-data`, campo `image` (JPEG, PNG o WebP, máx. 5 MB, máx. 8 por lugar) → 201 `{image:{id,url,position}}`. `400 INVALID_IMAGE`, `413 FILE_TOO_LARGE` |
-| `DELETE /places/:id/images/:imageId` | autor/staff | 204 (borra también el archivo) |
+| `POST /places/:id/images` | autor/staff | `multipart/form-data`, campo `image` (JPEG, PNG o WebP, máx. 5 MB, máx. 8 por lugar) → 201 `{image:{id,url,position}}`. `400 INVALID_IMAGE`, `413 FILE_TOO_LARGE`. **Alternativa:** JSON `{"url":"https://..."}` (https, público, ≤ 500 caracteres, sin credenciales): se guarda solo el enlace, el servidor no lo descarga ni verifica → `400 INVALID_IMAGE_URL`. Idéntico en `/products/:id/images` y `/reviews/:id/images` |
+| `POST /products/:id/images`, `DELETE /products/:id/images/:imageId` | autor/staff | Idéntico a spots (archivo o `{url}`; máx. 8 por producto) |
+| `DELETE /places/:id/images/:imageId` | autor/staff | 204 (borra también el archivo; si era un enlace, solo el registro) |
 
 ## Productos `/products`
 Igual que lugares, con: filtros `categoryId`, `brandId`, `minPrice`, `maxPrice` (excluye los que no tienen precio), `minRating`, `minReviews`; `sort` = `newest`·`rating`·`reviews`·`name`·`price_asc`·`price_desc` (sin precio al final). Cuerpo: `{name, brandId, categoryId, description?, price?: {amount, currency}|null, specs?: [{key,value}]}`. `409 DUPLICATE_PRODUCT` (misma marca y nombre). Imágenes: igual que lugares. No hay carrito ni pagos: el precio es orientativo.
@@ -201,7 +205,7 @@ Una reseña **por usuario y entidad** (`409 REVIEW_EXISTS`). Puntuación entera 
 | `GET /reviews/:id`, `GET /video-reviews/:id` | — | Pública si es visible; si no, autor y staff |
 | `PATCH /reviews/:id`, `PATCH /video-reviews/:id` | autor | `{rating?, comment?}`. Una reseña oculta por moderación sigue oculta; con premoderación activa, editar vuelve a revisión |
 | `DELETE /reviews/:id`, `DELETE /video-reviews/:id` | autor o admin | 204. Baja física (permite reseñar de nuevo) y borra las fotos del disco. Moderador: 403 (oculta, no elimina) |
-| `POST /reviews/:id/images`, `DELETE /reviews/:id/images/:imageId` | autor | Fotos (máx. 4; JPEG/PNG/WebP ≤ 5 MB). Los videos no admiten fotos |
+| `POST /reviews/:id/images`, `DELETE /reviews/:id/images/:imageId` | autor | Fotos (máx. 4). Igual que en spots: `multipart` campo `image` (JPEG/PNG/WebP ≤ 5 MB) **o** JSON `{"url":"https://..."}` (`400 INVALID_IMAGE_URL`). Los videos no admiten fotos |
 | `GET /users/me/reviews?kind=place\|product\|video` | usuario | Mis reseñas |
 Moderación de reseñas: `POST /moderation/review/:id/{approve\|hide\|restore}` y `/moderation/video_review/:id/...`; cola de pendientes `GET /moderation/reviews?type=review\|video_review`.
 
@@ -260,4 +264,4 @@ El servidor valida el rol **en cada request** leyéndolo de la base (suspender o
 - Tareas programadas dentro del proceso: baja de cuentas vencidas (03:15 UTC), limpieza de tokens (03:30) y destacados (cada hora).
 
 ## Pruebas de la API
-`cd backend && npm test` → 201 pruebas de integración (supertest) contra MySQL real, verificadas en MariaDB 10.11 y MySQL 8.0.46.
+`cd backend && npm test` → 206 pruebas de integración (supertest) contra MySQL real, verificadas en MariaDB 10.11 y MySQL 8.0.46.

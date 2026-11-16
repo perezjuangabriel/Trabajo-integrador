@@ -51,7 +51,7 @@ export async function remove(group, actor, id, ip) {
   const used = await repo.isUsed(group, id);
   const canDeactivate = Boolean(repo.GROUPS[group].active);
   if (used && !canDeactivate) {
-    const e = new Error('En uso'); e.code = 'ER_ROW_IS_REFERENCED_2'; throw e; // el manejador de errores lo traduce a 409 IN_USE
+    const e: any = new Error('En uso'); e.code = 'ER_ROW_IS_REFERENCED_2'; throw e; // el manejador de errores lo traduce a 409 IN_USE
   }
   return withTransaction(async (conn) => {
     if (used) await repo.update(group, id, { is_active: 0 }, conn); else await repo.remove(group, id, conn);

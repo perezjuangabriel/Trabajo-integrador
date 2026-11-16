@@ -9,6 +9,8 @@ import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { catalogApi, socialApi, staffApi } from '../api/services';
 import { useAsync } from '../hooks';
+import { API_URL } from '../config';
+import { PROVIDER_LABEL, allowNavigation, playerHtml } from '../lib/embed';
 import { RootStackParamList, useNav } from '../navigation/types';
 import type { Kind, PlaceDetail, ProductDetail, VideoDetail } from '../types';
 
@@ -88,20 +90,26 @@ function Gallery({ images, width }: { images: { id: number; url: string }[]; wid
 function VideoPlayer({ video, width }: { video: VideoDetail; width: number }) {
   const { colors: c } = useTheme();
   const [failed, setFailed] = useState(false);
-  const h = Math.round((width * 9) / 16);
+  const base = new URL(API_URL).origin; // origen https real: YouTube lo exige como Referer
+  const h = video.provider === 'instagram' ? Math.min(Math.round(width * 1.3), 640) : Math.round((width * 9) / 16); // los reels son verticales
   return (
     <View>
-      {video.embedUrl && !failed && Platform.OS !== 'web' ? ( // WebView no existe en web: ahí se muestra la miniatura y el enlace
-        <View style={{ width, height: h, backgroundColor: '#000' }}>
-          <WebView source={{ uri: video.embedUrl }} allowsFullscreenVideo javaScriptEnabled originWhitelist={['https://*']} mediaPlaybackRequiresUserAction
-            onShouldStartLoadWithRequest={(r) => r.url.startsWith(video.embedUrl!.split('?')[0]) || r.url === 'about:blank'} // evita navegar fuera del reproductor
-            onError={() => setFailed(true)} onHttpError={() => setFailed(true)} />
+      {video.embedUrl && !failed && Platform.OS === 'web' ? (
+        React.createElement('iframe', { src: video.embedUrl, title: video.title, allow: 'fullscreen; picture-in-picture; encrypted-media', allowFullScreen: true, referrerPolicy: 'strict-origin-when-cross-origin', style: { width, height: h, border: 0, backgroundColor: '#000' } })
+      ) : video.embedUrl && !failed ? (
+        <View style={{ width, height: h, backgroundColor: '#000', overflow: 'hidden' }}>
+          <WebView source={{ html: playerHtml(video.embedUrl), baseUrl: base }} style={{ backgroundColor: '#000' }}
+            originWhitelist={['*']} javaScriptEnabled domStorageEnabled allowsFullscreenVideo allowsInlineMediaPlayback mediaPlaybackRequiresUserAction={false}
+            setSupportMultipleWindows={false} nestedScrollEnabled scrollEnabled={false} startInLoadingState
+            renderLoading={() => <View style={{ flex: 1, backgroundColor: '#000', alignItems: 'center', justifyContent: 'center' }}><Muted>Cargando video…</Muted></View>}
+            onShouldStartLoadWithRequest={(r) => allowNavigation(r.url, base, r.isTopFrame !== false)}
+            onError={() => setFailed(true)} onHttpError={(e) => { if (e.nativeEvent.statusCode >= 400) setFailed(true); }} />
         </View>
       ) : video.thumbnailUrl ? <Image source={{ uri: video.thumbnailUrl }} style={{ width, height: h, backgroundColor: c.surfaceAlt }} contentFit="cover" />
         : <View style={{ width, height: h, backgroundColor: c.surfaceAlt, alignItems: 'center', justifyContent: 'center' }}><Muted>Video</Muted></View>}
       <View style={{ padding: 16, paddingBottom: 0, gap: 6 }}>
         {failed ? <Muted>Este video no permite reproducirse dentro de la app.</Muted> : !video.embedUrl ? <Muted>Este sitio no permite reproducción integrada: se abre en el navegador.</Muted> : null}
-        <Button title={video.provider === 'youtube' ? 'Abrir en YouTube' : 'Abrir video original'} variant="secondary" small onPress={() => Linking.openURL(video.url).catch(() => showError(new Error('No se pudo abrir el enlace')))} />
+        <Button title={video.provider === 'other' ? 'Abrir video original' : `Abrir en ${PROVIDER_LABEL[video.provider]}`} variant="secondary" small onPress={() => Linking.openURL(video.url).catch(() => showError(new Error('No se pudo abrir el enlace')))} />
       </View>
     </View>
   );
@@ -130,5 +138,5 @@ function ProductInfo({ p }: { p: ProductDetail }) {
   </>);
 }
 function VideoInfo({ v }: { v: VideoDetail }) {
-  return (<><Row wrap><Chip label={v.category.name} active /><Chip label={v.provider === 'other' ? 'Enlace externo' : v.provider} /></Row>{v.description ? <Body>{v.description}</Body> : null}</>);
+  return (<><Row wrap><Chip label={v.category.name} active /><Chip label={PROVIDER_LABEL[v.provider] ?? v.provider} /></Row>{v.description ? <Body>{v.description}</Body> : null}</>);
 }

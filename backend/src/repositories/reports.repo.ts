@@ -23,7 +23,7 @@ const SELECT = `
     LEFT JOIN places pl ON pl.id = r.place_id LEFT JOIN products pr ON pr.id = r.product_id LEFT JOIN videos v ON v.id = r.video_id
     LEFT JOIN reviews rv ON rv.id = r.review_id LEFT JOIN video_reviews vr ON vr.id = r.video_review_id`;
 
-export async function search({ status, targetType, reporterId, limit, offset }, db = pool) {
+export async function search({ status, targetType, reporterId, limit, offset }: { status?: any; targetType?: any; reporterId?: any; limit: number; offset: number }, db = pool) {
   const where = []; const params = [];
   if (status) { where.push('r.status = ?'); params.push(status); }
   if (reporterId) { where.push('r.reporter_id = ?'); params.push(reporterId); }
@@ -44,6 +44,6 @@ export async function close(id, { status, handledBy, note }, db = pool) {
   return res.affectedRows === 1;
 }
 // Al ocultar el objetivo, los demás reportes abiertos sobre él quedan resueltos.
-export const closeOthersForTarget = (targetType, targetId, exceptId, { handledBy, note }, db = pool) =>
+export const closeOthersForTarget = (targetType, targetId, exceptId, { handledBy, note }: { handledBy: any; note?: any }, db = pool) =>
   db.query(`UPDATE reports SET status = 'resolved', handled_by = ?, resolution_note = ?, handled_at = UTC_TIMESTAMP() WHERE ${TARGET_COL[targetType]} = ? AND status = 'open' AND id <> ?`,
     [handledBy, note ?? 'Resuelto junto con otro reporte sobre el mismo contenido', targetId, exceptId]);

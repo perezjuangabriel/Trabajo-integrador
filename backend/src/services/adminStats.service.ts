@@ -5,7 +5,7 @@ const group = async (sql, params = []) => Object.fromEntries((await pool.query(s
 const one = async (sql, params = []) => Object.values((await pool.query(sql, params))[0][0])[0];
 
 export async function stats() {
-  const content = {};
+  const content: Record<string, any> = {};
   for (const t of ['places', 'products', 'videos']) {
     content[t] = { ...(await group(`SELECT status AS k, COUNT(*) AS n FROM ${t} WHERE deleted_at IS NULL GROUP BY status`)), deleted: await one(`SELECT COUNT(*) FROM ${t} WHERE deleted_at IS NOT NULL`) };
   }

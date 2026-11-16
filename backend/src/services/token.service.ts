@@ -9,11 +9,11 @@ import { randomUUID } from 'node:crypto';
 const ISSUER = 'spotcheck-api';
 
 export const signAccessToken = (user) =>
-  jwt.sign({ role: user.role }, env.JWT_ACCESS_SECRET, { subject: String(user.id), expiresIn: env.JWT_ACCESS_TTL, issuer: ISSUER });
+  jwt.sign({ role: user.role }, env.JWT_ACCESS_SECRET, { subject: String(user.id), expiresIn: env.JWT_ACCESS_TTL as any, issuer: ISSUER });
 
 export function verifyAccessToken(token) {
   try {
-    const p = jwt.verify(token, env.JWT_ACCESS_SECRET, { issuer: ISSUER });
+    const p = jwt.verify(token, env.JWT_ACCESS_SECRET, { issuer: ISSUER }) as any;
     if (p.typ) throw new Error('not an access token'); // evita usar un token "sensitive" como acceso
     return p;
   } catch (e) {
@@ -26,7 +26,7 @@ export const signSensitiveToken = (userId) =>
   jwt.sign({ typ: 'sensitive' }, env.JWT_ACCESS_SECRET, { subject: String(userId), expiresIn: `${env.SENSITIVE_TTL_MIN}m`, issuer: ISSUER });
 export function verifySensitiveToken(token) {
   try {
-    const p = jwt.verify(token, env.JWT_ACCESS_SECRET, { issuer: ISSUER });
+    const p = jwt.verify(token, env.JWT_ACCESS_SECRET, { issuer: ISSUER }) as any;
     if (p.typ !== 'sensitive') throw new Error('wrong type');
     return p;
   } catch {
@@ -44,7 +44,7 @@ async function issueRefresh(userId, familyId, userAgent, db) {
 }
 
 /** Crea una sesión nueva (nueva "familia" de refresh tokens). */
-export async function issueSession(user, { userAgent } = {}, db) {
+export async function issueSession(user, { userAgent }: { userAgent?: string } = {}, db?) {
   const refreshToken = await issueRefresh(user.id, randomUUID(), userAgent, db);
   return { accessToken: signAccessToken(user), refreshToken };
 }

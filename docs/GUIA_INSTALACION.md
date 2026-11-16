@@ -93,9 +93,17 @@ ADMIN_EMAIL=tu@correo.com ADMIN_PASSWORD='UnaClaveSegura1' npm run create-admin
 ```
 (En Windows PowerShell: `$env:ADMIN_EMAIL="..."; $env:ADMIN_PASSWORD="..."; npm run create-admin`.) El rol admin **solo** se crea por este script.
 
+**Cuentas extra para una demostración.** El mismo script crea un moderador o un usuario ya verificado (sin enviar correo) con `ADMIN_ROLE`:
+```powershell
+$env:ADMIN_ROLE="moderator"; $env:ADMIN_EMAIL="moderador@demo.com"; $env:ADMIN_PASSWORD="UnaClave1"; $env:ADMIN_NAME="Moderador Demo"; npm run create-admin
+```
+Valores: `admin` (por defecto), `moderator` o `user`. Para apuntar a la base en la nube definí antes `MYSQL_URL` y `DB_SSL=true`.
+
+**Catálogo inicial.** `db:setup` crea solo las tablas. Al arrancar, el servidor carga las categorías, superficies, obstáculos y servicios básicos **si esas tablas están vacías** (no repone lo que borres después). Las marcas y ciudades se crean desde el panel de administración.
+
 ### 3.5 Pruebas
 ```bash
-npm test                 # 201 pruebas de integración con su propia base `spotcheck_test`
+npm test                 # 206 pruebas de integración con su propia base `spotcheck_test`
 DB_PORT=3307 npm test    # contra otro servidor/puerto
 ```
 Nunca tocan la base `spotcheck`.
@@ -148,6 +156,8 @@ npm run dev            # abrí http://localhost:3000
 ```
 En este modo la web usa el mismo origen que la API, sin CORS. La carpeta `backend/public` va en el repo a propósito (Render gratis no tiene memoria para compilarla); volvé a ejecutar `npm run build:web` cada vez que cambies la app.
 
+Navegación: en la web cada pantalla tiene su URL (`/spots`, `/productos`, `/videos`, `/ver/<tipo>/<id>`, `/admin`…), así que funcionan Atrás, Adelante y recargar; el servidor devuelve `index.html` para esas rutas. En pantallas grandes el contenido se limita a 820 px de ancho.
+
 Limitaciones de la web: la sesión se guarda en `localStorage` (no existe el almacén seguro del teléfono); los videos no se reproducen dentro de la app (miniatura y enlace al sitio original); el login con Google/GitHub/Discord no está verificado en web.
 
 ## 5. Generar el APK con EAS
@@ -164,8 +174,10 @@ eas init                       # vincula el proyecto y escribe el projectId en a
    ```bash
    eas build --platform android --profile preview
    ```
-3. EAS compila en la nube (10–20 min) y al terminar muestra un **enlace de descarga del `.apk`** (también en expo.dev → tu proyecto → Builds).
+3. EAS compila en la nube. Primero espera en la cola (en el plan gratuito puede tardar desde minutos hasta bastante más) y luego compila unos 10–20 min y al terminar muestra un **enlace de descarga del `.apk`** (también en expo.dev → tu proyecto → Builds).
 4. Pasalo al teléfono, abrilo y permití "instalar apps desconocidas".
+
+**Perfiles de `eas.json`:** `preview` genera un `.apk` instalable directo y es el que se usa para pruebas y entrega; `production` también genera `.apk` y suma un número de versión automático (útil para una tienda); `development` es para desarrollar con el teléfono en la misma red y apunta a una IP local (no se toca). La URL se guarda dentro del APK al compilar: si cambia el servidor, hay que generar otro APK. Las cuentas y el contenido viven en el servidor, no en el APK.
 
 Datos del build: paquete `com.spotcheck.app`, esquema `spotcheck://`. Si cambiás el esquema, actualizá `OAUTH_APP_REDIRECTS` en el servidor. Los íconos de `mobile/assets/` son marcadores provisorios: reemplazalos (1024×1024) antes de publicar.
 
@@ -179,4 +191,6 @@ Datos del build: paquete `com.spotcheck.app`, esquema `spotcheck://`. Si cambiá
 | Las imágenes no cargan en el teléfono | `PUBLIC_BASE_URL` debe ser alcanzable desde el teléfono (usá la IP de la PC, no `localhost`) |
 | No llegan correos | Falta `RESEND_API_KEY`: en desarrollo mirá el código en la consola del backend |
 | `expo export`/Metro falla con `babel-preset-expo` | Ejecutá `npm install` en `mobile/` (la dependencia ya está declarada) |
+| El selector de categorías está vacío en producción | La base se creó con `db:setup` y no tiene catálogos: actualizá el servidor (los carga al arrancar si están vacíos) o creá categorías desde el panel de admin |
+| La web muestra `Ruta no encontrada: GET /` | Falta `backend/public` en el despliegue (carpeta borrada o sin subir). Restaurala y volvé a desplegar |
 | Los scripts de este documento fallan en Windows | Usá PowerShell con la sintaxis de variables indicada, o Git Bash |

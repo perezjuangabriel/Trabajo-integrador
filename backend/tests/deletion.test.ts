@@ -29,7 +29,7 @@ const placeAgg = async (id) => (await db.query('SELECT avg_rating, review_count 
 describe('solicitud de baja', () => {
   it('exige verificación adicional y contraseña correcta; pasa a pending_deletion y puede cancelarse', async () => {
     const { body, accessToken, sensitive } = await registerUser().then(async (r) => ({ ...r, sensitive: await getSensitiveToken(r.body.email, r.accessToken) }));
-    const h = (s) => ({ ...asUser(accessToken), ...(s ? { 'X-Sensitive-Token': s } : {}) });
+    const h = (s?: string) => ({ ...asUser(accessToken), ...(s ? { 'X-Sensitive-Token': s } : {}) });
     expect((await api().post(DEL).set(h()).send({ password: PASSWORD })).status).toBe(401);          // sin token sensible
     expect((await api().post(DEL).set(h(sensitive)).send({ password: 'Equivocada1' })).status).toBe(403);
     const ok = await api().post(DEL).set(h(sensitive)).send({ password: PASSWORD });

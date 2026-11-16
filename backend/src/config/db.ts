@@ -13,7 +13,7 @@ const common = {
 // shortcut: sin DB_SSL_CA el canal va cifrado pero no se verifica la identidad del servidor; cargar el CA del proveedor para verificarla.
 const ssl = env.DB_SSL === 'true' ? { ssl: env.DB_SSL_CA ? { ca: env.DB_SSL_CA } : { rejectUnauthorized: false } } : {};
 
-export function buildConnectionConfig({ withDatabase = true } = {}) {
+export function buildConnectionConfig({ withDatabase = true } = {}): Record<string, any> {
   if (databaseUrl) return { uri: databaseUrl, ...common, ...ssl };
   return {
     host: env.DB_HOST,
@@ -27,7 +27,17 @@ export function buildConnectionConfig({ withDatabase = true } = {}) {
 }
 
 // Pool compartido. Todas las consultas del proyecto deben usar parámetros (?).
-export const pool = mysql.createPool(buildConnectionConfig());
+// Tipado deliberadamente laxo: mysql2 devuelve una unión (filas | ResultSetHeader) que obligaría a casteos en cada consulta.
+// Un solo tipo sirve para el pool y para una conexión de transacción (el código los usa indistintamente como `db`).
+export interface Db {
+  query(sql: string, params?: any): Promise<[any, any]>;
+  execute(sql: string, params?: any): Promise<[any, any]>;
+  getConnection(): Promise<Db>;
+  beginTransaction(): Promise<void>; commit(): Promise<void>; rollback(): Promise<void>; release(): void;
+  end(): Promise<void>;
+  pool: any;
+}
+export const pool = mysql.createPool(buildConnectionConfig()) as unknown as Db;
 
 // Cada conexión trabaja en UTC: NOW()/CURRENT_TIMESTAMP deben coincidir con las fechas
 // que mysql2 convierte (timezone 'Z'). Sin esto, un servidor MySQL con hora local
@@ -35,7 +45,7 @@ export const pool = mysql.createPool(buildConnectionConfig());
 pool.pool.on('connection', (conn) => conn.query("SET time_zone = '+00:00'"));
 
 /** Ejecuta varias operaciones en una transacción; rollback ante cualquier error. */
-export async function withTransaction(work) {
+export async function withTransaction<T>(work: (conn: Db) => Promise<T>): Promise<T> {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();

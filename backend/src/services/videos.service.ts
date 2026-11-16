@@ -1,3 +1,4 @@
+import { parseImageUrl } from '../utils/imageUrl.js';
 import { withTransaction } from '../config/db.js';
 import * as repo from '../repositories/videos.repo.js';
 import * as lookups from '../repositories/lookups.repo.js';
@@ -47,11 +48,12 @@ async function assertUrlFree(url, exceptId, conn) {
 export async function create(user, input) {
   await assertCategory(input.categoryId);
   const parsed = parseVideoUrl(input.url);
+  const thumbnailUrl = input.thumbnailUrl ? parseImageUrl(input.thumbnailUrl) : parsed.thumbnailUrl;
   const status = await cc.initialStatus('video', user);
   if (status === 'pending') await cc.assertPendingQuota('video', user);
   const id = await withTransaction(async (conn) => {
     await assertUrlFree(parsed.url, null, conn);
-    return repo.insert({ ...input, ...parsed, status, submittedBy: user.id }, conn);
+    return repo.insert({ ...input, ...parsed, thumbnailUrl, status, submittedBy: user.id }, conn);
   });
   return get(user, String(id));
 }
@@ -63,8 +65,9 @@ export async function update(user, id, input) {
   const parsed = input.url ? parseVideoUrl(input.url) : null;
   await withTransaction(async (conn) => {
     if (parsed) await assertUrlFree(parsed.url, id, conn);
-    const { url: _ignored, ...rest } = input;
-    await repo.updateFields(id, { ...rest, ...(parsed ? { url: parsed.url, provider: parsed.provider, externalId: parsed.externalId, thumbnailUrl: parsed.thumbnailUrl } : {}) }, conn);
+    const { url: _ignored, thumbnailUrl, ...rest } = input;
+    const thumb = thumbnailUrl ? parseImageUrl(thumbnailUrl) : thumbnailUrl; // string válida, null (borrar) o undefined (no tocar)
+    await repo.updateFields(id, { ...rest, ...(parsed ? { url: parsed.url, provider: parsed.provider, externalId: parsed.externalId, thumbnailUrl: thumb ?? parsed.thumbnailUrl } : thumb !== undefined ? { thumbnailUrl: thumb } : {}) }, conn);
     if (cc.shouldResubmit(user, row)) await common.resubmit('video', id, conn);
     await cc.logStaffEdit('video', user, id, Object.keys(input), conn);
   });

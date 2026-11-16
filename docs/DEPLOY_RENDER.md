@@ -30,7 +30,7 @@ npm run db:setup
 $env:ADMIN_EMAIL="tu@correo.com"; $env:ADMIN_PASSWORD="UnaClaveSegura123"
 npm run create-admin
 ```
-No uses `db:seed` en producción (se rechaza a propósito). La base queda **vacía**: cargá spots y productos desde la app como admin.
+No uses `db:seed` en producción (se rechaza a propósito). La base queda **vacía** de contenido: cargá spots y productos desde la app como admin. La configuración inicial (destacados y ajustes de moderación) la completa el servidor solo al arrancar.
 
 ## 3. Crear el servicio en Render
 1. Subí el repo a GitHub (ya incluye `render.yaml` y la web compilada en `backend/public`).
@@ -43,7 +43,7 @@ No uses `db:seed` en producción (se rechaza a propósito). La base queda **vac�
 | `DB_SSL` | `true` (ya viene en el blueprint) |
 | `PUBLIC_BASE_URL` | `https://TU-APP.onrender.com` (sin barra final; se conoce al crear el servicio, completala y redesplegá) |
 | `JWT_ACCESS_SECRET` | Lo genera Render solo |
-| `RESEND_API_KEY`, `MAIL_FROM` | Ver `OAUTH.md` y la sección de correo de la guía |
+| `RESEND_API_KEY`, `MAIL_FROM` | **`RESEND_API_KEY` es obligatoria en producción**: sin ella el servidor no arranca. Cargá la clave real de Resend (ver la guía de instalación) |
 | `GOOGLE_*`, `GITHUB_*`, `DISCORD_*` | `CLIENT_ID` / `CLIENT_SECRET` de cada proveedor |
 | `OAUTH_APP_REDIRECTS` | `spotcheck://auth` (ya viene) |
 

@@ -41,7 +41,7 @@ export async function entityState(slot, id, db = pool) {
   return e ? { id: e.id, label: e.label, isPublic: e.status === 'published' && !e.deleted_at } : null;
 }
 
-export async function candidates(slot, { categoryId, recencyDays }, db = pool) {
+export async function candidates(slot, { categoryId, recencyDays }: { categoryId?: number | null; recencyDays?: number }, db = pool) {
   const c = SLOT_CFG[slot];
   const params = [recencyDays]; let cat = '';
   if (categoryId) { cat = 'AND e.category_id = ?'; params.push(categoryId); }
