@@ -5,6 +5,7 @@ import { Banner, Body, Button, Card, Chip, EmptyView, ErrorView, Loading, Muted,
 import { useAuth } from '../context/AuthContext';
 import { catalogApi } from '../api/services';
 import { useAsync } from '../hooks';
+import { useLiveRefresh } from '../live';
 import { useNav } from '../navigation/types';
 import type { Kind } from '../types';
 
@@ -17,7 +18,8 @@ const QUICK: { label: string; go: (n: ReturnType<typeof useNav>) => void }[] = [
 
 export function HomeScreen() {
   const nav = useNav(); const { user, offline, refreshUser } = useAuth();
-  const { data, error, loading, reload } = useAsync(() => catalogApi.home(), []);
+  const { data, error, loading, reload, refresh } = useAsync(() => catalogApi.home(), []);
+  useLiveRefresh('content', refresh);
   const open = (kind: Kind, id: number) => nav.navigate('Detail', { kind, id });
   if (loading && !data) return <Screen><Loading label="Cargando la home…" /></Screen>;
   if (error && !data) return <Screen><ErrorView error={error} onRetry={reload} /></Screen>;

@@ -7,6 +7,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { catalogApi } from '../api/services';
 import { useAsync, usePaginated } from '../hooks';
+import { useLiveRefresh } from '../live';
 import { useNav } from '../navigation/types';
 import { toNumber } from '../lib/validate';
 import type { AnyCard, Kind } from '../types';
@@ -34,6 +35,7 @@ export function CatalogScreen({ kind }: { kind: Kind }) {
     page, pageSize: 12, q: q || undefined, categoryId: filters.categoryId, cityId: filters.cityId, brandId: filters.brandId, zone: filters.zone || undefined,
     minRating: filters.minRating, minReviews: filters.minReviews, minPrice: toNumber(filters.minPrice ?? '') ?? undefined, maxPrice: toNumber(filters.maxPrice ?? '') ?? undefined, sort: filters.sort,
   }), [kind, q, JSON.stringify(filters)]);
+  useLiveRefresh('content', list.refresh);
 
   return (
     <SafeAreaView style={s.root} edges={['top']}>

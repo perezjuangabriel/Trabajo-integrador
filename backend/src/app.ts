@@ -6,6 +6,8 @@ import cors from 'cors';
 import { env } from './config/env.js';
 import { createLimiters } from './middleware/rateLimit.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
+import { trackChanges } from './middleware/changes.js';
+import { snapshot } from './services/changes.service.js';
 import { createApiRouter } from './routes/index.js';
 
 /** Fábrica de la app (separada de server.js para poder probarla con supertest). */
@@ -30,7 +32,9 @@ export function createApp({ limiterOptions, webDir = env.WEB_DIR }: { limiterOpt
   }));
 
   const limiters = createLimiters(limiterOptions);
-  app.use('/api/v1', limiters.general, createApiRouter(limiters));
+  // Aviso de cambios: lo consulta cada app abierta cada pocos segundos, por eso queda fuera del límite general (muchos dispositivos pueden compartir una IP).
+  app.get('/api/v1/changes', (req, res) => { res.set('Cache-Control', 'no-store'); res.json({ data: snapshot() }); });
+  app.use('/api/v1', trackChanges, limiters.general, createApiRouter(limiters));
   // Versión web (opcional): si existe la carpeta exportada, se sirve en la raíz con fallback a index.html.
   const webRoot = path.resolve(webDir);
   if (fs.existsSync(path.join(webRoot, 'index.html'))) {

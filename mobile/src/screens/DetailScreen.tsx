@@ -9,6 +9,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { catalogApi, socialApi, staffApi } from '../api/services';
 import { useAsync } from '../hooks';
+import { useLiveRefresh } from '../live';
 import { API_URL } from '../config';
 import { PROVIDER_LABEL, allowNavigation, playerHtml } from '../lib/embed';
 import { RootStackParamList, useNav } from '../navigation/types';
@@ -24,6 +25,7 @@ export function DetailScreen() {
   const prompt = usePrompt();
   const [rk, setRk] = useState(0);
   const detail = useAsync(() => catalogApi.get(kind, id), [kind, id, rk]);
+  useLiveRefresh('content', detail.refresh);
   const [fav, setFav] = useState(false);
   useEffect(() => { if (user) socialApi.favIds().then((f) => setFav(f[kind].includes(id))).catch(() => {}); else setFav(false); }, [user?.id, kind, id]);
 

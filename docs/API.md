@@ -8,6 +8,7 @@ Referencia técnica del backend. Base: `{PUBLIC_BASE_URL}/api/v1` (local: `http:
 ```bash
 B=http://localhost:3000/api/v1
 curl $B/health                                   # {"data":{"status":"ok"}}
+curl $B/changes                                  # {"data":{"content":"…","reviews":"…"}}  versiones para la actualización automática (público, sin límite de velocidad)
 
 # 1) Iniciar sesión
 curl -X POST $B/auth/login -H 'Content-Type: application/json' \

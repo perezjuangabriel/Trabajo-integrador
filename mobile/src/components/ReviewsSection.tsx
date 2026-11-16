@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { reviewsApi, staffApi } from '../api/services';
 import { usePaginated, useAsync } from '../hooks';
+import { useLiveRefresh } from '../live';
 import { useNav } from '../navigation/types';
 import type { Kind, Review } from '../types';
 
@@ -17,6 +18,7 @@ export function ReviewsSection({ kind, id, canReview, reloadKey, onChanged }: { 
   const prompt = usePrompt();
   const summary = useAsync(() => reviewsApi.list(kind, id, { page: 1, pageSize: 1 }), [kind, id, reloadKey]);
   const list = usePaginated<Review>((page) => reviewsApi.list(kind, id, { page, pageSize: 10, sort, rating: rating ?? undefined }), [kind, id, sort, rating, reloadKey]);
+  useLiveRefresh('reviews', () => { summary.refresh(); list.refresh(); });
   const mine = summary.data?.myReview ?? null;
   const dist = summary.data?.summary.distribution ?? {};
   const total = summary.data?.summary.reviewCount ?? 0;

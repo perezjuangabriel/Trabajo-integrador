@@ -5,6 +5,7 @@ import { Card, Chip, EmptyView, ErrorView, Loading, Muted, Pill, Row, STATUS_PIL
 import { useAuth } from '../context/AuthContext';
 import { meApi, socialApi } from '../api/services';
 import { usePaginated } from '../hooks';
+import { useLiveRefresh } from '../live';
 import { useNav } from '../navigation/types';
 import type { Kind, Review } from '../types';
 
@@ -22,6 +23,7 @@ function Paged<T>({ list, render, empty }: { list: ReturnType<typeof usePaginate
 export function FavoritesScreen() {
   const nav = useNav(); const { user } = useAuth(); const [kind, setKind] = useState<Kind>('place');
   const list = usePaginated((p) => socialApi.favList(kind, p), [kind, user?.id]);
+  useLiveRefresh('content', list.refresh);
   if (!user) return <Screen><NeedLogin /></Screen>;
   return <Screen scroll={false}><KindTabs kind={kind} onChange={setKind} />
     <Paged list={list} render={(i) => <ContentCard kind={kind} item={i} onPress={() => nav.navigate('Detail', { kind, id: i.id })} />} empty={<EmptyView title="Todavía no guardaste favoritos" hint="Tocá «Favorito» en cualquier spot, producto o video." />} /></Screen>;
@@ -30,6 +32,7 @@ export function FavoritesScreen() {
 export function SubmissionsScreen() {
   const nav = useNav(); const { user } = useAuth(); const [kind, setKind] = useState<Kind>('place');
   const list = usePaginated((p) => meApi.submissions(kind, p), [kind, user?.id]);
+  useLiveRefresh('content', list.refresh);
   if (!user) return <Screen><NeedLogin /></Screen>;
   return <Screen scroll={false}><KindTabs kind={kind} onChange={setKind} />
     <Paged list={list} render={(i) => <ContentCard kind={kind} item={i} showStatus onPress={() => nav.navigate('Detail', { kind, id: i.id })} />} empty={<EmptyView title="No enviaste propuestas" hint="Proponé un spot, producto o video desde su sección." />} /></Screen>;
@@ -38,6 +41,7 @@ export function SubmissionsScreen() {
 export function MyReviewsScreen() {
   const nav = useNav(); const { user } = useAuth(); const [kind, setKind] = useState<Kind>('place');
   const list = usePaginated<Review>((p) => meApi.reviews(kind, p), [kind, user?.id]);
+  useLiveRefresh('reviews', list.refresh);
   if (!user) return <Screen><NeedLogin /></Screen>;
   return <Screen scroll={false}><KindTabs kind={kind} onChange={setKind} />
     <Paged list={list} empty={<EmptyView title="Todavía no escribiste reseñas" />} render={(r) => (
@@ -50,6 +54,7 @@ const VERB = { review: 'Reseñaste', favorite: 'Guardaste', submission: 'Propusi
 export function ActivityScreen() {
   const nav = useNav(); const { user } = useAuth();
   const list = usePaginated((p) => meApi.activity(p), [user?.id]);
+  useLiveRefresh('content', list.refresh);
   if (!user) return <Screen><NeedLogin /></Screen>;
   return <Screen scroll={false}><Paged list={list} empty={<EmptyView title="Sin actividad todavía" hint="Tus reseñas, favoritos y propuestas aparecen acá." />} render={(a) => (
     <Card onPress={() => nav.navigate('Detail', { kind: a.target.kind, id: a.target.id })}><View style={{ padding: 12, gap: 2 }}>

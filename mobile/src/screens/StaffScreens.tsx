@@ -5,6 +5,7 @@ import { Banner, Body, Button, Card, Chip, EmptyView, ErrorView, Loading, Muted,
 import { useAuth } from '../context/AuthContext';
 import { staffApi } from '../api/services';
 import { usePaginated } from '../hooks';
+import { useLiveRefresh } from '../live';
 import { useNav } from '../navigation/types';
 import type { Kind } from '../types';
 
@@ -25,6 +26,7 @@ export function ModerationScreen() {
   const reviews = usePaginated((p) => (tab === 'reviews' ? staffApi.pendingReviews(rtype, p) : Promise.resolve({ items: [], page: 1, pageSize: 20, total: 0, totalPages: 1 })), [tab, rtype]);
   const reports = usePaginated((p) => (tab === 'reports' ? staffApi.reports(p) : Promise.resolve({ items: [], page: 1, pageSize: 20, total: 0, totalPages: 1 })), [tab]);
   const logs = usePaginated((p) => (tab === 'logs' ? staffApi.logs(p) : Promise.resolve({ items: [], page: 1, pageSize: 30, total: 0, totalPages: 1 })), [tab]);
+  useLiveRefresh('content', () => { queue.refresh(); reviews.refresh(); reports.refresh(); logs.refresh(); });
   if (!isStaff) return <Screen><Banner tone="danger" text="Esta sección es solo para moderadores y administradores." /></Screen>;
 
   const run = async (fn: () => Promise<unknown>, after: () => void) => { try { await fn(); after(); } catch (e) { showError(e); } };

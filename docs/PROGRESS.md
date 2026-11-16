@@ -7,6 +7,9 @@
 - Al eliminar cuenta: **se eliminan las reseñas**.
 - Panel admin dentro de la misma app móvil (rol admin), una sola base de código y un APK.
 
+## Actualización automática
+- `GET /api/v1/changes` devuelve una versión por tema (`content`, `reviews`) que sube con cada escritura exitosa (middleware `changes.ts`). La app la consulta cada 10 s con la app en primer plano (`mobile/src/live.ts`) y recarga en silencio las pantallas abiertas. No es tiempo real estricto: retraso máximo de ~10 s. Contador en memoria (una instancia).
+
 ## Versiones verificadas (npm, 29/10/2026)
 Expo SDK 58 (`expo@58.0.21`) → React 19.3.0, React Native 0.88.1, expo-secure-store ~58.0.2, expo-auth-session ~58.0.16, expo-web-browser ~58.0.7, expo-crypto ~58.0.7, expo-linking ~58.0.15, expo-constants ~58.0.14, expo-image ~58.0.18, expo-image-picker ~58.0.10, expo-status-bar ~58.0.4, expo-video ~58.0.13, expo-system-ui ~58.0.7, react-native-screens ~4.30.0, react-native-safe-area-context ~5.10.1, react-native-gesture-handler ~3.3.0, react-native-reanimated 4.7.1, async-storage 2.2.0, react-native-webview 14.0.1. (Salen de `expo/bundledNativeModules.json`; al crear `/mobile` usar `npx expo install` para fijarlas.)
 Backend (TypeScript ejecutado con `tsx`, ESM, Node 22; `npm run typecheck` = `tsc`): express ^5.3, mysql2 ^3.24, zod ^4.6, bcryptjs ^3, jsonwebtoken ^9, helmet ^8, express-rate-limit ^8, multer ^2, resend ^6, node-cron ^4, dotenv ^18; dev: vitest ^5, supertest ^7.
